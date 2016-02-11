@@ -5,13 +5,16 @@
     <title>SkiFree</title>
     <script src="js/bundle.js"></script>
     <script src="js/jquery-2.1.1.js"></script>
+    <link rel="stylesheet" href="ski.css" media="screen" title="no title" charset="utf-8">
   </head>
   <body>
-    <canvas id='ski'></canvas>
+    <div class='content group'>
+      <canvas id='ski'></canvas>
+      <ul class='options'>
+        <li id='speed1'>Slow</li>
+        <li id='speed2'>Fast</li>
+        <li id='speed3'>Reckless</li>
+      </ul>
+    </div>
   </body>
-
-  <style>
-    #ski {
-      border: 1px solid black;
-    }
 </html>

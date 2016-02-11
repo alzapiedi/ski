@@ -10,12 +10,43 @@ var Ski = function () {
   this.crashed = false;
   this.canCrash = true;
   this.direction = 3;
-  this.vels = { 3: [0,0], 4: [-10, -9], 5: [-5, -13], 6: [0, -17], 7: [5, -13], 8: [10, -9], 9: [0,0] };
+  this.speed = 1;
   // skiImg.onload = function () {
   this.skier = new Skier({pos: [400, 300], game: this, img: this.skierImgs[3]});
   // }.bind(this);
   this.startObjectInterval();
 }
+
+Ski.prototype.setSpeed = function (s) {
+  clearInterval(this.objInterval);
+  this.objInterval = 0;
+  this.speed = s;
+  this.updateVelocities();
+  this.startObjectInterval();
+}
+
+Ski.prototype.vels = function () {
+  var s = this.speed;
+  var vels = {
+    3: [0,0],
+    4: [-8 * s, -6 * s],
+    5: [-4 * s, -10 * s],
+    6: [0, -13 * s],
+    7: [4 * s, -10 * s],
+    8: [8 * s, -6 * s],
+    9: [0,0]
+  };
+  return vels;
+}
+
+Ski.prototype.remove = function (object) {
+    if(object instanceof Obstacle){
+      var i = this.obstacles.indexOf(object);
+      this.obstacles.splice(i, 1);
+    } else if (false) {
+
+    }
+  };
 
 Ski.prototype.loadImages = function () {
   var ski3 = new Image();
@@ -58,7 +89,7 @@ Ski.prototype.startObjectInterval = function () {
     if ( this.direction > 3 && this.direction < 9 ) {
       this.addObject();
     }
-  }.bind(this), 250);
+  }.bind(this), 300/this.speed);
 }
 
 Ski.prototype.randomPosition = function () {
@@ -83,6 +114,7 @@ Ski.prototype.moveObjects = function () {
 Ski.prototype.step = function () {
   this.moveObjects();
   this.checkCollisions();
+  console.log(this.obstacles.length);
 }
 
 Ski.prototype.checkCollisions = function () {
@@ -102,7 +134,7 @@ Ski.prototype.addObject = function () {
     var j = Math.floor(Math.random() * 4);
     var obstacle = new Obstacle({
       pos: this.randomPosition(),
-      vel: this.vels[this.direction],
+      vel: this.vels()[this.direction],
       game: this,
       img: this.obstacleImgs[j],
       style: j
@@ -115,7 +147,7 @@ Ski.prototype.addObject = function () {
 
 Ski.prototype.updateVelocities = function () {
   this.allObjects().forEach(function (obj) {
-    obj.vel = this.vels[this.direction];
+    obj.vel = this.vels()[this.direction];
   }.bind(this));
 }
 
@@ -149,6 +181,7 @@ Ski.prototype.changeDirection = function (keyCode) {  //37 left   39 right
 
 Ski.prototype.skiCrash = function () {
   clearInterval(this.objInterval);
+  this.objInterval = 0;
   this.skier.img = this.skierImgs["crash"];
   this.crashed = true;
   this.canCrash = false;

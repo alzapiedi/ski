@@ -1,0 +1,43 @@
+.group:after {
+  content: "";
+  display: block;
+  clear: both;
+}
+#ski {
+  border: 1px solid black;
+  float: left;
+}
+.content {
+  width: 1050px;
+  display: block;
+}
+.options {
+  float: left;
+  width: 120px;
+  display: block;
+}
+ul {
+  list-style: none;
+  margin: 0;
+  margin-left: 10px;
+  padding: 0;
+}
+li {
+  font-size: 15px;
+  font-family: Helvetica;
+  padding: 10px 20px;
+  border: 1px solid #ccc;
+}
+li:hover {
+  cursor: pointer;
+  background: #dbdbdb;
+}
+#speed1 {
+  color: red;
+}
+#speed2 {
+  color: orange;
+}
+#speed3 {
+  color: green;
+}

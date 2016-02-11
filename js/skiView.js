@@ -21,5 +21,9 @@ SkiView.prototype.bindKeyHandlers = function () {
       this.game.changeDirection(e.keyCode);
     }
   }.bind(this));
+  $('.options').on('click', function (e) {
+    var s = parseInt(e.target.id.substring(5,6));
+    this.game.setSpeed(s);
+  }.bind(this));
 }
 module.exports = SkiView;
