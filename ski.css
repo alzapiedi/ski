@@ -30,8 +30,12 @@ li {
 }
 li:hover {
   cursor: pointer;
+}
+
+.selected {
   background: #dbdbdb;
 }
+
 #speed1 {
   color: red;
 }

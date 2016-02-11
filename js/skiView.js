@@ -23,6 +23,10 @@ SkiView.prototype.bindKeyHandlers = function () {
   }.bind(this));
   $('.options').on('click', function (e) {
     var s = parseInt(e.target.id.substring(5,6));
+    $('li').each(function (i, el) {
+      $(el).removeClass();
+    });
+    $(e.target).addClass('selected');
     this.game.setSpeed(s);
   }.bind(this));
 }
