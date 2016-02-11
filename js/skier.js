@@ -19,13 +19,12 @@ Skier.prototype.getHitBox = function () {
 }
 
 Skier.prototype.isCollidedWith = function (otherObject) {
-  if (!this.game.canCrash) { return false; }
   return Utils.overlap(this.getHitBox(), otherObject.getHitBox());
 };
 
 
 Skier.prototype.collideWith = function (otherObject) {
-  if (otherObject instanceof Obstacle) {
+  if (otherObject instanceof Obstacle && this.game.canCrash) {
     this.game.skiCrash();
   } else if (otherObject instanceof Ramp) {
     this.game.skiJump();

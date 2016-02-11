@@ -107,15 +107,22 @@ Ski.prototype.randomPosition = function () {
 
 Ski.prototype.draw = function (ctx) {
   ctx.clearRect(0,0,800,600);
-  this.skier.draw(ctx);
+  if (!this.isJumping) { this.skier.draw(ctx); }
   this.allObjects().forEach(function (obj) {
     obj.draw(ctx);
   });
+  if (this.isJumping) { this.skier.draw(ctx); }
 }
 
 Ski.prototype.moveObjects = function () {
   this.allObjects().forEach(function (obj) {
     obj.move();
+  });
+}
+
+Ski.prototype.shiftObjects = function (n) {
+  this.allObjects().forEach(function (obj) {
+    obj.shift(n);
   });
 }
 
@@ -163,7 +170,7 @@ Ski.prototype.updateVelocities = function () {
 }
 
 Ski.prototype.changeDirection = function (keyCode) {  //37 left   39 right
-  if (!this.crashed) {
+  if (!this.crashed && !this.isJumping) {
     var dir = this.direction;
     if (dir === 10) {
       setTimeout(function () {
@@ -182,6 +189,10 @@ Ski.prototype.changeDirection = function (keyCode) {  //37 left   39 right
       this.direction -= 1;
     } else if (keyCode === 40) {
       this.direction = 6;
+    } else if (keyCode === 37 && dir === 9) {
+      this.shiftObjects(10);
+    } else if (keyCode === 39 && dir === 3) {
+      this.shiftObjects(-10);
     } else {
       return;
     }
@@ -210,6 +221,8 @@ Ski.prototype.skiCrash = function () {
 
 Ski.prototype.skiJump = function () {
   this.isJumping = true;
+  this.direction = 6;
+  this.updateVelocities();
   this.canCrash = false;
   this.skier.img = this.skierImgs["jump"];
   setTimeout(function () {

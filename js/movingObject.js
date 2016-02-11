@@ -11,13 +11,13 @@ MovingObject.prototype.move = function () {
   if (!this.vel) { debugger; }
   this.pos[0] += this.vel[0];
   this.pos[1] += this.vel[1];
-  if (this.pos[1] < 0) {
+  if (this.pos[1] < -40) {
     this.game.remove(this);
   }
 }
 
-MovingObject.prototype.setVel = function (vel) {
-  this.vel = vel;
+MovingObject.prototype.shift = function (n) {
+  this.pos[0] += n;
 }
 
 MovingObject.prototype.draw = function (ctx) {
