@@ -65,7 +65,8 @@
 	var MovingObject = __webpack_require__(3),
 	    Utils = __webpack_require__(4),
 	    Skier = __webpack_require__(5),
-	    Obstacle = __webpack_require__(6);
+	    Obstacle = __webpack_require__(6),
+	    Ramp = __webpack_require__(7);
 	
 	var Ski = function () {
 	  this.loadImages();
@@ -75,6 +76,7 @@
 	  this.canCrash = true;
 	  this.direction = 3;
 	  this.speed = 1;
+	  this.isJumping = false;
 	  // skiImg.onload = function () {
 	  this.skier = new Skier({pos: [400, 300], game: this, img: this.skierImgs[3]});
 	  // }.bind(this);
@@ -98,7 +100,8 @@
 	    6: [0, -13 * s],
 	    7: [4 * s, -10 * s],
 	    8: [8 * s, -6 * s],
-	    9: [0,0]
+	    9: [0,0],
+	    10: [0,0]
 	  };
 	  return vels;
 	}
@@ -122,10 +125,12 @@
 	  var ski9 = new Image();
 	  var ski10 = new Image();
 	  var skiCrash = new Image();
+	  var skiJump = new Image();
 	  var tree1 = new Image();
 	  var tree2 = new Image();
 	  var tree3 = new Image();
 	  var rock = new Image();
+	  var ramp = new Image();
 	  ski3.src = 'img/skier3.png';
 	  ski4.src = 'img/skier4.png';
 	  ski5.src = 'img/skier5.png';
@@ -135,12 +140,15 @@
 	  ski9.src = 'img/skier9.png';
 	  ski10.src = 'img/skier10.png';
 	  skiCrash.src = 'img/skicrash.png';
+	  skiJump.src = 'img/skijump.png';
 	  tree1.src = 'img/tree1.png';
 	  tree2.src = 'img/tree2.png';
 	  tree3.src = 'img/tree3.png';
 	  rock.src = 'img/rock.png';
-	  this.skierImgs = {3: ski3, 4: ski4, 5: ski5, 6: ski6, 7: ski7, 8: ski8, 9: ski9, 10: ski10, crash: skiCrash};
+	  ramp.src = 'img/ramp.png';
+	  this.skierImgs = {3: ski3, 4: ski4, 5: ski5, 6: ski6, 7: ski7, 8: ski8, 9: ski9, 10: ski10, crash: skiCrash, jump: skiJump};
 	  this.obstacleImgs = {0: tree1, 1: tree2, 2: tree3, 3: rock};
+	  this.rampImg = ramp;
 	}
 	
 	Ski.prototype.allObjects = function () {
@@ -178,16 +186,13 @@
 	Ski.prototype.step = function () {
 	  this.moveObjects();
 	  this.checkCollisions();
-	  console.log(this.obstacles.length);
 	}
 	
 	Ski.prototype.checkCollisions = function () {
-	  if (this.canCrash) {
-	    var obj = this.allObjects();
-	    for (var i = 0; i < obj.length; i++) {
-	      if (this.skier.isCollidedWith(obj[i])) {
-	        this.skier.collideWith(obj[i]);
-	      }
+	  var obj = this.allObjects();
+	  for (var i = 0; i < obj.length; i++) {
+	    if (this.skier.isCollidedWith(obj[i])) {
+	      this.skier.collideWith(obj[i]);
 	    }
 	  }
 	}
@@ -205,7 +210,13 @@
 	    });
 	    this.obstacles.push(obstacle);
 	  } else {
-	
+	    var ramp = new Ramp({
+	      pos: this.randomPosition(),
+	      vel: this.vels()[this.direction],
+	      game: this,
+	      img: this.rampImg
+	    });
+	    this.ramps.push(ramp);
 	  }
 	}
 	
@@ -249,7 +260,7 @@
 	  this.skier.img = this.skierImgs["crash"];
 	  this.crashed = true;
 	  this.canCrash = false;
-	  this.allObjects().forEach (function (obj) {
+	  this.allObjects().forEach(function (obj) {
 	    obj.vel = [0, 0];
 	  });
 	  setTimeout(function () {
@@ -259,6 +270,20 @@
 	    this.updateVelocities();
 	    this.startObjectInterval();
 	  }.bind(this), 1000);
+	}
+	
+	Ski.prototype.skiJump = function () {
+	  this.isJumping = true;
+	  this.canCrash = false;
+	  this.skier.img = this.skierImgs["jump"];
+	  setTimeout(function () {
+	    this.isJumping = false;
+	    this.canCrash = true;
+	    this.direction = 6;
+	    this.skier.img = this.skierImgs[this.direction];
+	    this.skier.animationDir = -1;
+	    this.skier.pos = [400, 300];
+	  }.bind(this), 2000);
 	}
 	
 	
@@ -318,11 +343,16 @@
 	}
 	
 	MovingObject.prototype.move = function () {
+	  if (!this.vel) { debugger; }
 	  this.pos[0] += this.vel[0];
 	  this.pos[1] += this.vel[1];
 	  if (this.pos[1] < 0) {
 	    this.game.remove(this);
 	  }
+	}
+	
+	MovingObject.prototype.setVel = function (vel) {
+	  this.vel = vel;
 	}
 	
 	MovingObject.prototype.draw = function (ctx) {
@@ -371,12 +401,14 @@
 
 	var MovingObject = __webpack_require__(3),
 	    Utils = __webpack_require__(4),
-	    Obstacle = __webpack_require__(6);
+	    Obstacle = __webpack_require__(6),
+	    Ramp = __webpack_require__(7);
 	
 	var Skier = function (attr) {
 	  var pos = attr.pos;
 	  var game = attr.game;
 	  var img = attr.img;
+	  this.animationDir = -1;
 	  MovingObject.call(this, {pos: pos, vel: [0, 0], game: game, img: img});
 	}
 	Utils.inherits(Skier, MovingObject);
@@ -388,6 +420,7 @@
 	}
 	
 	Skier.prototype.isCollidedWith = function (otherObject) {
+	  if (!this.game.canCrash) { return false; }
 	  return Utils.overlap(this.getHitBox(), otherObject.getHitBox());
 	};
 	
@@ -395,7 +428,19 @@
 	Skier.prototype.collideWith = function (otherObject) {
 	  if (otherObject instanceof Obstacle) {
 	    this.game.skiCrash();
+	  } else if (otherObject instanceof Ramp) {
+	    this.game.skiJump();
 	  }
+	}
+	
+	Skier.prototype.draw = function (ctx) {
+	  if (this.game.isJumping) {
+	    this.pos[1] += 5*this.animationDir;
+	    if (this.pos[1] < 200) {
+	      this.animationDir = 1;
+	    }
+	  }
+	    ctx.drawImage(this.img, this.pos[0], this.pos[1]);
 	}
 	
 	
@@ -431,6 +476,27 @@
 	
 	
 	module.exports = Obstacle;
+
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var MovingObject = __webpack_require__(3),
+	    Utils = __webpack_require__(4);
+	
+	var Ramp = function (attr) {
+	  MovingObject.call(this,attr);
+	}
+	
+	Utils.inherits(Ramp, MovingObject);
+	
+	Ramp.prototype.getHitBox = function () {
+	  var pos = this.pos;
+	  return {top: pos[1], bottom: pos[1] + 5, left: pos[0], right: pos[0] + 25};
+	}
+	
+	module.exports = Ramp;
 
 
 /***/ }

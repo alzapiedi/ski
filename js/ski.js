@@ -1,7 +1,8 @@
 var MovingObject = require('./movingObject'),
     Utils = require('./utils'),
     Skier = require('./skier'),
-    Obstacle = require('./obstacle');
+    Obstacle = require('./obstacle'),
+    Ramp = require('./ramp');
 
 var Ski = function () {
   this.loadImages();
@@ -11,6 +12,7 @@ var Ski = function () {
   this.canCrash = true;
   this.direction = 3;
   this.speed = 1;
+  this.isJumping = false;
   // skiImg.onload = function () {
   this.skier = new Skier({pos: [400, 300], game: this, img: this.skierImgs[3]});
   // }.bind(this);
@@ -34,7 +36,8 @@ Ski.prototype.vels = function () {
     6: [0, -13 * s],
     7: [4 * s, -10 * s],
     8: [8 * s, -6 * s],
-    9: [0,0]
+    9: [0,0],
+    10: [0,0]
   };
   return vels;
 }
@@ -58,10 +61,12 @@ Ski.prototype.loadImages = function () {
   var ski9 = new Image();
   var ski10 = new Image();
   var skiCrash = new Image();
+  var skiJump = new Image();
   var tree1 = new Image();
   var tree2 = new Image();
   var tree3 = new Image();
   var rock = new Image();
+  var ramp = new Image();
   ski3.src = 'img/skier3.png';
   ski4.src = 'img/skier4.png';
   ski5.src = 'img/skier5.png';
@@ -71,12 +76,15 @@ Ski.prototype.loadImages = function () {
   ski9.src = 'img/skier9.png';
   ski10.src = 'img/skier10.png';
   skiCrash.src = 'img/skicrash.png';
+  skiJump.src = 'img/skijump.png';
   tree1.src = 'img/tree1.png';
   tree2.src = 'img/tree2.png';
   tree3.src = 'img/tree3.png';
   rock.src = 'img/rock.png';
-  this.skierImgs = {3: ski3, 4: ski4, 5: ski5, 6: ski6, 7: ski7, 8: ski8, 9: ski9, 10: ski10, crash: skiCrash};
+  ramp.src = 'img/ramp.png';
+  this.skierImgs = {3: ski3, 4: ski4, 5: ski5, 6: ski6, 7: ski7, 8: ski8, 9: ski9, 10: ski10, crash: skiCrash, jump: skiJump};
   this.obstacleImgs = {0: tree1, 1: tree2, 2: tree3, 3: rock};
+  this.rampImg = ramp;
 }
 
 Ski.prototype.allObjects = function () {
@@ -114,16 +122,13 @@ Ski.prototype.moveObjects = function () {
 Ski.prototype.step = function () {
   this.moveObjects();
   this.checkCollisions();
-  console.log(this.obstacles.length);
 }
 
 Ski.prototype.checkCollisions = function () {
-  if (this.canCrash) {
-    var obj = this.allObjects();
-    for (var i = 0; i < obj.length; i++) {
-      if (this.skier.isCollidedWith(obj[i])) {
-        this.skier.collideWith(obj[i]);
-      }
+  var obj = this.allObjects();
+  for (var i = 0; i < obj.length; i++) {
+    if (this.skier.isCollidedWith(obj[i])) {
+      this.skier.collideWith(obj[i]);
     }
   }
 }
@@ -141,7 +146,13 @@ Ski.prototype.addObject = function () {
     });
     this.obstacles.push(obstacle);
   } else {
-
+    var ramp = new Ramp({
+      pos: this.randomPosition(),
+      vel: this.vels()[this.direction],
+      game: this,
+      img: this.rampImg
+    });
+    this.ramps.push(ramp);
   }
 }
 
@@ -185,7 +196,7 @@ Ski.prototype.skiCrash = function () {
   this.skier.img = this.skierImgs["crash"];
   this.crashed = true;
   this.canCrash = false;
-  this.allObjects().forEach (function (obj) {
+  this.allObjects().forEach(function (obj) {
     obj.vel = [0, 0];
   });
   setTimeout(function () {
@@ -195,6 +206,20 @@ Ski.prototype.skiCrash = function () {
     this.updateVelocities();
     this.startObjectInterval();
   }.bind(this), 1000);
+}
+
+Ski.prototype.skiJump = function () {
+  this.isJumping = true;
+  this.canCrash = false;
+  this.skier.img = this.skierImgs["jump"];
+  setTimeout(function () {
+    this.isJumping = false;
+    this.canCrash = true;
+    this.direction = 6;
+    this.skier.img = this.skierImgs[this.direction];
+    this.skier.animationDir = -1;
+    this.skier.pos = [400, 300];
+  }.bind(this), 2000);
 }
 
 
