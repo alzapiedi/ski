@@ -198,8 +198,8 @@
 	}
 	
 	Ski.prototype.addObject = function () {
-	  var i = Math.floor(Math.random() * 5);
-	  if (i > 0) {
+	  var i = Math.floor(Math.random() * 10);
+	  if (i > 2) {
 	    var j = Math.floor(Math.random() * 4);
 	    var obstacle = new Obstacle({
 	      pos: this.randomPosition(),
