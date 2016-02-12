@@ -45,7 +45,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var Ski = __webpack_require__(1),
-	    SkiView = __webpack_require__(2);
+	    SkiView = __webpack_require__(7);
 	
 	document.addEventListener('DOMContentLoaded', function () {
 	  var canvas = document.getElementById('ski');
@@ -62,10 +62,10 @@
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var MovingObject = __webpack_require__(3),
-	    Utils = __webpack_require__(4),
-	    Skier = __webpack_require__(5),
-	    Obstacle = __webpack_require__(6);
+	var MovingObject = __webpack_require__(2),
+	    Utils = __webpack_require__(3),
+	    Skier = __webpack_require__(4),
+	    Obstacle = __webpack_require__(5);
 	
 	var Ski = function () {
 	  this.loadImages();
@@ -234,40 +234,9 @@
 
 /***/ },
 /* 2 */
-/***/ function(module, exports) {
-
-	var SkiView = function (game, ctx) {
-	  this.game = game;
-	  this.ctx = ctx;
-	}
-	
-	SkiView.prototype.start = function () {
-	  this.bindKeyHandlers();
-	  var callback = function () {
-	    this.game.draw(this.ctx);
-	    this.game.step();
-	  }
-	  setInterval(callback.bind(this), 50);
-	}
-	
-	SkiView.prototype.bindKeyHandlers = function () {
-	  var key;
-	  $(document).on('keydown', function (e) {
-	    key = e.keyCode;
-	    if (key > 36 && key < 41) {
-	      e.preventDefault();
-	      this.game.changeDirection(e.keyCode);
-	    }
-	  }.bind(this));
-	}
-	module.exports = SkiView;
-
-
-/***/ },
-/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Utils = __webpack_require__(4);
+	var Utils = __webpack_require__(3);
 	
 	var MovingObject = function (attr) {
 	  this.pos = attr.pos;
@@ -290,7 +259,7 @@
 
 
 /***/ },
-/* 4 */
+/* 3 */
 /***/ function(module, exports) {
 
 	var Utils = {};
@@ -322,12 +291,12 @@
 
 
 /***/ },
-/* 5 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var MovingObject = __webpack_require__(3),
-	    Utils = __webpack_require__(4),
-	    Obstacle = __webpack_require__(6);
+	var MovingObject = __webpack_require__(2),
+	    Utils = __webpack_require__(3),
+	    Obstacle = __webpack_require__(5);
 	
 	var Skier = function (attr) {
 	  var pos = attr.pos;
@@ -359,11 +328,11 @@
 
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var MovingObject = __webpack_require__(3),
-	    Utils = __webpack_require__(4);
+	var MovingObject = __webpack_require__(2),
+	    Utils = __webpack_require__(3);
 	
 	var Obstacle = function (attr) {
 	  this.style = attr.style;
@@ -387,6 +356,38 @@
 	
 	
 	module.exports = Obstacle;
+
+
+/***/ },
+/* 6 */,
+/* 7 */
+/***/ function(module, exports) {
+
+	var SkiView = function (game, ctx) {
+	  this.game = game;
+	  this.ctx = ctx;
+	}
+	
+	SkiView.prototype.start = function () {
+	  this.bindKeyHandlers();
+	  var callback = function () {
+	    this.game.draw(this.ctx);
+	    this.game.step();
+	  }
+	  setInterval(callback.bind(this), 50);
+	}
+	
+	SkiView.prototype.bindKeyHandlers = function () {
+	  var key;
+	  $(document).on('keydown', function (e) {
+	    key = e.keyCode;
+	    if (key > 36 && key < 41) {
+	      e.preventDefault();
+	      this.game.changeDirection(e.keyCode);
+	    }
+	  }.bind(this));
+	}
+	module.exports = SkiView;
 
 
 /***/ }
