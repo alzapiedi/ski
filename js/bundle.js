@@ -104,11 +104,11 @@
 	  var s = this.speed;
 	  var vels = {
 	    3: [0,0],
-	    4: [-8 * s, -6 * s],
-	    5: [-4 * s, -8 * s],
-	    6: [0, -13 * s],
-	    7: [4 * s, -8 * s],
-	    8: [8 * s, -6 * s],
+	    4: [-3 * s, -2 * s],
+	    5: [-2 * s, -3 * s],
+	    6: [0, -3.5 * s],
+	    7: [2 * s, -3 * s],
+	    8: [3 * s, -2 * s],
 	    9: [0,0],
 	    10: [0,0]
 	  };
@@ -202,21 +202,21 @@
 	  return [x, 600];
 	}
 	
-	Ski.prototype.draw = function (ctx) {
+	Ski.prototype.draw = function (ctx, timeDelta) {
 	  ctx.clearRect(0,0,800,600);
 	  ctx.font="20px Helvetica";
 	  var timer = this.getTimer() || "0s";
 	  ctx.fillText(timer,750,25);
-	  if (!this.isJumping) { this.skier.draw(ctx); }
+	  if (!this.isJumping) { this.skier.draw(ctx, timeDelta); }
 	  this.allObjects().forEach(function (obj) {
 	    obj.draw(ctx);
 	  });
-	  if (this.isJumping) { this.skier.draw(ctx); }
+	  if (this.isJumping) { this.skier.draw(ctx, timeDelta); }
 	}
 	
-	Ski.prototype.moveObjects = function () {
+	Ski.prototype.moveObjects = function (timeDelta) {
 	  this.allObjects().forEach(function (obj) {
-	    obj.move();
+	    obj.move(timeDelta);
 	  });
 	}
 	
@@ -234,8 +234,8 @@
 	  this.god = false;
 	}
 	
-	Ski.prototype.step = function () {
-	  this.moveObjects();
+	Ski.prototype.step = function (timeDelta) {
+	  this.moveObjects(timeDelta);
 	  this.checkCollisions();
 	}
 	
@@ -357,11 +357,11 @@
 	  this.img = attr.img;
 	}
 	
-	MovingObject.prototype.move = function () {
+	MovingObject.prototype.move = function (timeDelta) {
 	  if (!this.vel) { debugger; }
-	  this.pos[0] += this.vel[0];
-	  this.pos[1] += this.vel[1];
-	  if (this.pos[1] < -40) {
+	  this.pos[0] += this.vel[0] * timeDelta / (1000/60);
+	  this.pos[1] += this.vel[1] * timeDelta / (1000/60);
+	  if (this.pos[1] < -50) {
 	    this.game.remove(this);
 	  }
 	}
@@ -431,7 +431,7 @@
 	
 	Skier.prototype.getHitBox = function () {
 	  var pos = this.pos;
-	  return {top: pos[1] + 10, bottom: pos[1] + 30, left: pos[0], right: pos[0] + 15};
+	  return {top: pos[1] + 15, bottom: pos[1] + 30, left: pos[0] + 5, right: pos[0] + 15};
 	}
 	
 	Skier.prototype.isCollidedWith = function (otherObject) {
@@ -448,9 +448,10 @@
 	  }
 	}
 	
-	Skier.prototype.draw = function (ctx) {
+	Skier.prototype.draw = function (ctx, timeDelta) {
 	  if (this.game.isJumping) {
-	    this.pos[1] += 5*this.animationDir;
+	    this.pos[1] += (timeDelta/(1000/60))*this.animationDir*1.6;
+	    console.log(timeDelta / (1000/60));
 	    if (this.pos[1] < 200) {
 	      this.animationDir = 1;
 	    }
@@ -478,11 +479,11 @@
 	Obstacle.prototype.getHitBox = function () {
 	  var pos = this.pos;
 	  if (this.style === 0) {
-	    return {top: pos[1] + 20, bottom: pos[1] + 60, left: pos[0] + 10, right: pos[0] + 25};
+	    return {top: pos[1] + 42, bottom: pos[1] + 60, left: pos[0] + 10, right: pos[0] + 25};
 	  } else if (this.style === 1) {
-	    return {top: pos[1] + 12, bottom: pos[1] + 30, left: pos[0], right: pos[0] + 15};
+	    return {top: pos[1] + 17, bottom: pos[1] + 30, left: pos[0] + 6, right: pos[0] + 15};
 	  } else if (this.style === 2) {
-	    return {top: pos[1] + 10, bottom: pos[1] + 30, left: pos[0], right: pos[0] + 15};
+	    return {top: pos[1] + 18, bottom: pos[1] + 30, left: pos[0] + 11, right: pos[0] + 19};
 	  } else {
 	    return {top: pos[1] + 5, bottom: pos[1] + 12, left: pos[0], right: pos[0] + 15};
 	  }
@@ -528,11 +529,16 @@
 	SkiView.prototype.start = function () {
 	  this.bindKeyHandlers();
 	  this.bindSettingsHandler();
-	  var callback = function () {
-	    this.game.draw(this.ctx);
-	    this.game.step();
-	  }
-	  this.gameInterval = setInterval(callback.bind(this), 50);
+	  this.lastTime = 0;
+	  requestAnimationFrame(this.animate.bind(this));
+	}
+	
+	SkiView.prototype.animate = function (time) {
+	  timeDelta = time - this.lastTime;
+	  this.game.step(timeDelta);
+	  this.game.draw(this.ctx, timeDelta);
+	  this.lastTime = time;
+	  requestAnimationFrame(this.animate.bind(this));
 	}
 	
 	SkiView.prototype.bindKeyHandlers = function () {
@@ -576,14 +582,7 @@
 	  $('.options').css('display', 'none');
 	  $('.newgame').css('display', 'block');
 	  $('.newgame').on('click', function (e) {
-	    e.preventDefault();
-	    this.unbindKeyHandlers();
-	    clearInterval(this.gameInterval);
-	    delete this.game;
-	    this.game = new Ski();
-	    $('.newgame').css('display', 'none');
-	    $('.options').css('display', 'block');
-	    this.start();
+	    window.location.reload();
 	  }.bind(this));
 	
 	}

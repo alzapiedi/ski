@@ -15,7 +15,7 @@ Utils.inherits(Skier, MovingObject);
 
 Skier.prototype.getHitBox = function () {
   var pos = this.pos;
-  return {top: pos[1] + 10, bottom: pos[1] + 30, left: pos[0], right: pos[0] + 15};
+  return {top: pos[1] + 15, bottom: pos[1] + 30, left: pos[0] + 5, right: pos[0] + 15};
 }
 
 Skier.prototype.isCollidedWith = function (otherObject) {
@@ -32,9 +32,10 @@ Skier.prototype.collideWith = function (otherObject) {
   }
 }
 
-Skier.prototype.draw = function (ctx) {
+Skier.prototype.draw = function (ctx, timeDelta) {
   if (this.game.isJumping) {
-    this.pos[1] += 5*this.animationDir;
+    this.pos[1] += (timeDelta/(1000/60))*this.animationDir*1.6;
+    console.log(timeDelta / (1000/60));
     if (this.pos[1] < 200) {
       this.animationDir = 1;
     }

@@ -39,11 +39,11 @@ Ski.prototype.vels = function () {
   var s = this.speed;
   var vels = {
     3: [0,0],
-    4: [-8 * s, -6 * s],
-    5: [-4 * s, -8 * s],
-    6: [0, -13 * s],
-    7: [4 * s, -8 * s],
-    8: [8 * s, -6 * s],
+    4: [-3 * s, -2 * s],
+    5: [-2 * s, -3 * s],
+    6: [0, -3.5 * s],
+    7: [2 * s, -3 * s],
+    8: [3 * s, -2 * s],
     9: [0,0],
     10: [0,0]
   };
@@ -137,21 +137,21 @@ Ski.prototype.randomPosition = function () {
   return [x, 600];
 }
 
-Ski.prototype.draw = function (ctx) {
+Ski.prototype.draw = function (ctx, timeDelta) {
   ctx.clearRect(0,0,800,600);
   ctx.font="20px Helvetica";
   var timer = this.getTimer() || "0s";
   ctx.fillText(timer,750,25);
-  if (!this.isJumping) { this.skier.draw(ctx); }
+  if (!this.isJumping) { this.skier.draw(ctx, timeDelta); }
   this.allObjects().forEach(function (obj) {
     obj.draw(ctx);
   });
-  if (this.isJumping) { this.skier.draw(ctx); }
+  if (this.isJumping) { this.skier.draw(ctx, timeDelta); }
 }
 
-Ski.prototype.moveObjects = function () {
+Ski.prototype.moveObjects = function (timeDelta) {
   this.allObjects().forEach(function (obj) {
-    obj.move();
+    obj.move(timeDelta);
   });
 }
 
@@ -169,8 +169,8 @@ Ski.prototype.disableGodMode = function () {
   this.god = false;
 }
 
-Ski.prototype.step = function () {
-  this.moveObjects();
+Ski.prototype.step = function (timeDelta) {
+  this.moveObjects(timeDelta);
   this.checkCollisions();
 }
 

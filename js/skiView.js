@@ -8,11 +8,16 @@ var SkiView = function (game, ctx) {
 SkiView.prototype.start = function () {
   this.bindKeyHandlers();
   this.bindSettingsHandler();
-  var callback = function () {
-    this.game.draw(this.ctx);
-    this.game.step();
-  }
-  this.gameInterval = setInterval(callback.bind(this), 50);
+  this.lastTime = 0;
+  requestAnimationFrame(this.animate.bind(this));
+}
+
+SkiView.prototype.animate = function (time) {
+  timeDelta = time - this.lastTime;
+  this.game.step(timeDelta);
+  this.game.draw(this.ctx, timeDelta);
+  this.lastTime = time;
+  requestAnimationFrame(this.animate.bind(this));
 }
 
 SkiView.prototype.bindKeyHandlers = function () {
@@ -56,14 +61,7 @@ SkiView.prototype.unbindSettingsHandler = function () {
   $('.options').css('display', 'none');
   $('.newgame').css('display', 'block');
   $('.newgame').on('click', function (e) {
-    e.preventDefault();
-    this.unbindKeyHandlers();
-    clearInterval(this.gameInterval);
-    delete this.game;
-    this.game = new Ski();
-    $('.newgame').css('display', 'none');
-    $('.options').css('display', 'block');
-    this.start();
+    window.location.reload();
   }.bind(this));
 
 }
