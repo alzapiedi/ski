@@ -14,6 +14,7 @@ var Ski = function () {
   this.speed = 1;
   this.density = 1;
   this.isJumping = false;
+  this.timerStart = Date.now();
   // skiImg.onload = function () {
   this.skier = new Skier({pos: [400, 300], game: this, img: this.skierImgs[3]});
   // }.bind(this);
@@ -49,13 +50,31 @@ Ski.prototype.vels = function () {
 }
 
 Ski.prototype.remove = function (object) {
-    if(object instanceof Obstacle){
-      var i = this.obstacles.indexOf(object);
-      this.obstacles.splice(i, 1);
-    } else if (false) {
+  if(object instanceof Obstacle){
+    var i = this.obstacles.indexOf(object);
+    this.obstacles.splice(i, 1);
+  } else if (false) {
 
-    }
-  };
+  }
+};
+
+Ski.prototype.isMoving = function () {
+  var moving = this.direction > 3 && this.direction < 9;
+  if (!moving) { this.restartTimer(); }
+  return moving;
+}
+
+Ski.prototype.restartTimer = function () {
+  this.timerStart = Date.now();
+}
+
+Ski.prototype.getTimer = function () {
+  if (this.isMoving()) {
+    this.timerNow = Math.floor((Date.now() - this.timerStart)/1000) + "s";
+  }
+  return this.timerNow;
+}
+
 
 Ski.prototype.loadImages = function () {
   var ski3 = new Image();
@@ -118,6 +137,9 @@ Ski.prototype.randomPosition = function () {
 
 Ski.prototype.draw = function (ctx) {
   ctx.clearRect(0,0,800,600);
+  ctx.font="20px Helvetica";
+  var timer = this.getTimer() || "0s";
+  ctx.fillText(timer,750,25);
   if (!this.isJumping) { this.skier.draw(ctx); }
   this.allObjects().forEach(function (obj) {
     obj.draw(ctx);
@@ -212,6 +234,7 @@ Ski.prototype.changeDirection = function (keyCode) {  //37 left   39 right
 
 Ski.prototype.skiCrash = function () {
   this.stopObjectInterval();
+  this.direction = 10;
   this.skier.img = this.skierImgs["crash"];
   this.crashed = true;
   this.canCrash = false;
@@ -220,7 +243,6 @@ Ski.prototype.skiCrash = function () {
   });
   setTimeout(function () {
     this.crashed = false;
-    this.direction = 10;
     this.skier.img = this.skierImgs[this.direction];
     this.updateVelocities();
     this.startObjectInterval();
