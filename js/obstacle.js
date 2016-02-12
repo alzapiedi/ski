@@ -12,7 +12,7 @@ Obstacle.prototype.getHitBox = function () {
   if (this.style === 0) {
     return {top: pos[1] + 20, bottom: pos[1] + 60, left: pos[0] + 10, right: pos[0] + 25};
   } else if (this.style === 1) {
-    return {top: pos[1], bottom: pos[1] + 30, left: pos[0], right: pos[0] + 15};
+    return {top: pos[1] + 12, bottom: pos[1] + 30, left: pos[0], right: pos[0] + 15};
   } else if (this.style === 2) {
     return {top: pos[1] + 10, bottom: pos[1] + 30, left: pos[0], right: pos[0] + 15};
   } else {

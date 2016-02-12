@@ -38,14 +38,14 @@ Ski.prototype.vels = function () {
   var vels = {
     3: [0,0],
     4: [-8 * s, -6 * s],
-    5: [-4 * s, -10 * s],
+    5: [-4 * s, -8 * s],
     6: [0, -13 * s],
-    7: [4 * s, -10 * s],
+    7: [4 * s, -8 * s],
     8: [8 * s, -6 * s],
     9: [0,0],
     10: [0,0]
   };
-  return vels;
+    return vels;
 }
 
 Ski.prototype.remove = function (object) {
@@ -188,8 +188,6 @@ Ski.prototype.changeDirection = function (keyCode) {  //37 left   39 right
         this.canCrash = true;
       }.bind(this), 1000)
     }
-
-
     if (keyCode === 37 && dir === 3) {
       this.direction = 9;
     } else if (keyCode === 37 && dir > 3 && dir < 9) {

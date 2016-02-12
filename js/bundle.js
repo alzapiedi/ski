@@ -102,14 +102,14 @@
 	  var vels = {
 	    3: [0,0],
 	    4: [-8 * s, -6 * s],
-	    5: [-4 * s, -10 * s],
+	    5: [-4 * s, -8 * s],
 	    6: [0, -13 * s],
-	    7: [4 * s, -10 * s],
+	    7: [4 * s, -8 * s],
 	    8: [8 * s, -6 * s],
 	    9: [0,0],
 	    10: [0,0]
 	  };
-	  return vels;
+	    return vels;
 	}
 	
 	Ski.prototype.remove = function (object) {
@@ -252,8 +252,6 @@
 	        this.canCrash = true;
 	      }.bind(this), 1000)
 	    }
-	
-	
 	    if (keyCode === 37 && dir === 3) {
 	      this.direction = 9;
 	    } else if (keyCode === 37 && dir > 3 && dir < 9) {
@@ -411,7 +409,7 @@
 	Skier.prototype.collideWith = function (otherObject) {
 	  if (otherObject instanceof Obstacle && this.game.canCrash  && !this.game.isJumping) {
 	    this.game.skiCrash();
-	  } else if (otherObject instanceof Ramp) {
+	  } else if (otherObject instanceof Ramp && !this.game.isJumping) {
 	    this.game.skiJump();
 	  }
 	}
@@ -448,7 +446,7 @@
 	  if (this.style === 0) {
 	    return {top: pos[1] + 20, bottom: pos[1] + 60, left: pos[0] + 10, right: pos[0] + 25};
 	  } else if (this.style === 1) {
-	    return {top: pos[1], bottom: pos[1] + 30, left: pos[0], right: pos[0] + 15};
+	    return {top: pos[1] + 12, bottom: pos[1] + 30, left: pos[0], right: pos[0] + 15};
 	  } else if (this.style === 2) {
 	    return {top: pos[1] + 10, bottom: pos[1] + 30, left: pos[0], right: pos[0] + 15};
 	  } else {
@@ -484,8 +482,10 @@
 
 /***/ },
 /* 7 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
+	var Ski = __webpack_require__(1);
+	
 	var SkiView = function (game, ctx) {
 	  this.game = game;
 	  this.ctx = ctx;
@@ -498,19 +498,23 @@
 	    this.game.draw(this.ctx);
 	    this.game.step();
 	  }
-	  setInterval(callback.bind(this), 50);
+	  this.gameInterval = setInterval(callback.bind(this), 50);
 	}
 	
 	SkiView.prototype.bindKeyHandlers = function () {
 	  var key;
 	  $(document).on('keydown', function (e) {
-	    this.unbindSettingsHandler();
 	    key = e.keyCode;
 	    if (key > 36 && key < 41) {
 	      e.preventDefault();
+	      this.unbindSettingsHandler();
 	      this.game.changeDirection(e.keyCode);
 	    }
 	  }.bind(this));
+	}
+	
+	SkiView.prototype.unbindKeyHandlers = function () {
+	  $(document).off('keydown');
 	}
 	
 	SkiView.prototype.bindSettingsHandler = function () {
@@ -520,7 +524,6 @@
 	      $(el).removeClass();
 	    });
 	    $(e.target).addClass('selected');
-	    debugger;
 	    this.game.setSpeed(s);
 	  }.bind(this));
 	  $('.density').on('click', function (e) {
@@ -529,7 +532,6 @@
 	      $(el).removeClass();
 	    });
 	    $(e.target).addClass('selected');
-	    debugger;
 	    this.game.setDensity(d);
 	  }.bind(this));
 	}
@@ -537,6 +539,19 @@
 	SkiView.prototype.unbindSettingsHandler = function () {
 	  $('.speed').off('click');
 	  $('.density').off('click');
+	  $('.options').css('display', 'none');
+	  $('.newgame').css('display', 'block');
+	  $('.newgame').on('click', function (e) {
+	    e.preventDefault();
+	    this.unbindKeyHandlers();
+	    clearInterval(this.gameInterval);
+	    delete this.game;
+	    this.game = new Ski();
+	    $('.newgame').css('display', 'none');
+	    $('.options').css('display', 'block');
+	    this.start();
+	  }.bind(this));
+	
 	}
 	module.exports = SkiView;
 
