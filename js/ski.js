@@ -21,16 +21,14 @@ var Ski = function () {
 }
 
 Ski.prototype.setSpeed = function (s) {
-  clearInterval(this.objInterval);
-  this.objInterval = 0;
+  this.stopObjectInterval();
   this.speed = s;
   this.updateVelocities();
   this.startObjectInterval();
 }
 
 Ski.prototype.setDensity = function (d) {
-  clearInterval(this.objInterval);
-  this.objInterval = 0;
+  this.stopObjectInterval();
   this.density = d;
   this.startObjectInterval()
 }
@@ -106,6 +104,11 @@ Ski.prototype.startObjectInterval = function () {
       this.addObject();
     }
   }.bind(this), (300/this.speed)/this.density);
+}
+
+Ski.prototype.stopObjectInterval = function () {
+  clearInterval(this.objInterval);
+  this.objInterval = 0;
 }
 
 Ski.prototype.randomPosition = function () {
@@ -210,8 +213,7 @@ Ski.prototype.changeDirection = function (keyCode) {  //37 left   39 right
 }
 
 Ski.prototype.skiCrash = function () {
-  clearInterval(this.objInterval);
-  this.objInterval = 0;
+  this.stopObjectInterval();
   this.skier.img = this.skierImgs["crash"];
   this.crashed = true;
   this.canCrash = false;

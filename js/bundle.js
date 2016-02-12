@@ -85,16 +85,14 @@
 	}
 	
 	Ski.prototype.setSpeed = function (s) {
-	  clearInterval(this.objInterval);
-	  this.objInterval = 0;
+	  this.stopObjectInterval();
 	  this.speed = s;
 	  this.updateVelocities();
 	  this.startObjectInterval();
 	}
 	
 	Ski.prototype.setDensity = function (d) {
-	  clearInterval(this.objInterval);
-	  this.objInterval = 0;
+	  this.stopObjectInterval();
 	  this.density = d;
 	  this.startObjectInterval()
 	}
@@ -170,6 +168,11 @@
 	      this.addObject();
 	    }
 	  }.bind(this), (300/this.speed)/this.density);
+	}
+	
+	Ski.prototype.stopObjectInterval = function () {
+	  clearInterval(this.objInterval);
+	  this.objInterval = 0;
 	}
 	
 	Ski.prototype.randomPosition = function () {
@@ -274,8 +277,7 @@
 	}
 	
 	Ski.prototype.skiCrash = function () {
-	  clearInterval(this.objInterval);
-	  this.objInterval = 0;
+	  this.stopObjectInterval();
 	  this.skier.img = this.skierImgs["crash"];
 	  this.crashed = true;
 	  this.canCrash = false;
@@ -491,6 +493,7 @@
 	
 	SkiView.prototype.start = function () {
 	  this.bindKeyHandlers();
+	  this.bindSettingsHandler();
 	  var callback = function () {
 	    this.game.draw(this.ctx);
 	    this.game.step();
@@ -501,12 +504,16 @@
 	SkiView.prototype.bindKeyHandlers = function () {
 	  var key;
 	  $(document).on('keydown', function (e) {
+	    this.unbindSettingsHandler();
 	    key = e.keyCode;
 	    if (key > 36 && key < 41) {
 	      e.preventDefault();
 	      this.game.changeDirection(e.keyCode);
 	    }
 	  }.bind(this));
+	}
+	
+	SkiView.prototype.bindSettingsHandler = function () {
 	  $('.speed').on('click', function (e) {
 	    var s = parseInt(e.target.id.substring(5,6));
 	    $('.speed').children().each(function (i, el) {
@@ -525,6 +532,11 @@
 	    debugger;
 	    this.game.setDensity(d);
 	  }.bind(this));
+	}
+	
+	SkiView.prototype.unbindSettingsHandler = function () {
+	  $('.speed').off('click');
+	  $('.density').off('click');
 	}
 	module.exports = SkiView;
 
