@@ -59,6 +59,14 @@ li:hover {
   font-size: 14px;
 }
 
+.welcome {
+  position: absolute;
+  top: 120px;
+  left: 150px;
+  display: none;
+  font-family: Helvetica;
+}
+
 #speed1, #obj3, #mon0 {
   color: red;
 }

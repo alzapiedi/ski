@@ -9,9 +9,9 @@ Loading.prototype.animate = function (callback) {
     setTimeout(function () {
       this.ctx.drawImage(this.img2,0,0,800,600);
       this.ctx.drawImage(this.img3,300,400);
-      this.mouseMove();
-      setTimeout(callback, 3000);
-    }.bind(this), 4000);
+      setTimeout(this.mouseMove.bind(this), 1000);
+      setTimeout(callback, 3300);
+    }.bind(this), 4300);
   }.bind(this);
 }
 

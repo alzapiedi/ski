@@ -23,7 +23,7 @@ var Ski = function () {
   // skiImg.onload = function () {
   this.skier = new Skier({pos: [400, 300], game: this, img: this.skierImgs[3]});
   // }.bind(this);
-
+  this.seedObjects();
   this.startObjectInterval();
 }
 
@@ -38,6 +38,16 @@ Ski.prototype.setDensity = function (d) {
   this.stopObjectInterval();
   this.density = d;
   this.startObjectInterval()
+}
+
+Ski.prototype.seedObjects = function () {
+  for (var i = 0; i < 10; i++) {
+    this.addObject();
+  }
+  this.allObjects().forEach(function (obj) {
+    var r = Math.random() * 200 + 100;
+    obj.pos[1] -= r;
+  });
 }
 
 Ski.prototype.vels = function () {

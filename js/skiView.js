@@ -8,6 +8,7 @@ var SkiView = function (game, ctx) {
 
 SkiView.prototype.start = function () {
   $('.newgame').off('click');
+  $('.welcome').css('display','block');
   this.bindKeyHandlers();
   this.bindSettingsHandler();
   this.lastTime = 0;
@@ -33,6 +34,7 @@ SkiView.prototype.bindKeyHandlers = function () {
     if (key > 36 && key < 41) {
       e.preventDefault();
       this.unbindSettingsHandler();
+      $('.welcome').css('display','none');
       this.game.changeDirection(e.keyCode);
     }
   }.bind(this));

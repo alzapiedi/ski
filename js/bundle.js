@@ -91,7 +91,7 @@
 	  // skiImg.onload = function () {
 	  this.skier = new Skier({pos: [400, 300], game: this, img: this.skierImgs[3]});
 	  // }.bind(this);
-	
+	  this.seedObjects();
 	  this.startObjectInterval();
 	}
 	
@@ -106,6 +106,16 @@
 	  this.stopObjectInterval();
 	  this.density = d;
 	  this.startObjectInterval()
+	}
+	
+	Ski.prototype.seedObjects = function () {
+	  for (var i = 0; i < 10; i++) {
+	    this.addObject();
+	  }
+	  this.allObjects().forEach(function (obj) {
+	    var r = Math.random() * 200 + 100;
+	    obj.pos[1] -= r;
+	  });
 	}
 	
 	Ski.prototype.vels = function () {
@@ -604,6 +614,7 @@
 	
 	SkiView.prototype.start = function () {
 	  $('.newgame').off('click');
+	  $('.welcome').css('display','block');
 	  this.bindKeyHandlers();
 	  this.bindSettingsHandler();
 	  this.lastTime = 0;
@@ -629,6 +640,7 @@
 	    if (key > 36 && key < 41) {
 	      e.preventDefault();
 	      this.unbindSettingsHandler();
+	      $('.welcome').css('display','none');
 	      this.game.changeDirection(e.keyCode);
 	    }
 	  }.bind(this));
@@ -706,9 +718,9 @@
 	    setTimeout(function () {
 	      this.ctx.drawImage(this.img2,0,0,800,600);
 	      this.ctx.drawImage(this.img3,300,400);
-	      this.mouseMove();
-	      setTimeout(callback, 3000);
-	    }.bind(this), 4000);
+	      setTimeout(this.mouseMove.bind(this), 1000);
+	      setTimeout(callback, 3300);
+	    }.bind(this), 4300);
 	  }.bind(this);
 	}
 	
