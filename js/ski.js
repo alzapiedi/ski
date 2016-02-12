@@ -12,6 +12,7 @@ var Ski = function () {
   this.canCrash = true;
   this.direction = 3;
   this.speed = 1;
+  this.density = 1;
   this.isJumping = false;
   // skiImg.onload = function () {
   this.skier = new Skier({pos: [400, 300], game: this, img: this.skierImgs[3]});
@@ -25,6 +26,13 @@ Ski.prototype.setSpeed = function (s) {
   this.speed = s;
   this.updateVelocities();
   this.startObjectInterval();
+}
+
+Ski.prototype.setDensity = function (d) {
+  clearInterval(this.objInterval);
+  this.objInterval = 0;
+  this.density = d;
+  this.startObjectInterval()
 }
 
 Ski.prototype.vels = function () {
@@ -97,7 +105,7 @@ Ski.prototype.startObjectInterval = function () {
     if ( this.direction > 3 && this.direction < 9 ) {
       this.addObject();
     }
-  }.bind(this), 300/this.speed);
+  }.bind(this), (300/this.speed)/this.density);
 }
 
 Ski.prototype.randomPosition = function () {

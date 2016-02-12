@@ -7,26 +7,36 @@
   border: 1px solid black;
   float: left;
 }
+h2 {
+  color: white;
+  background: black;
+  font-family: Helvetica;
+  margin: 0;
+  font-size: 18px;
+  text-align: center;
+}
 .content {
   width: 1050px;
   display: block;
 }
 .options {
   float: left;
-  width: 120px;
+  width: 150px;
   display: block;
 }
 ul {
   list-style: none;
   margin: 0;
-  margin-left: 10px;
+  margin-bottom: 10px;
   padding: 0;
+  width: 100%;
 }
 li {
   font-size: 15px;
   font-family: Helvetica;
   padding: 10px 20px;
   border: 1px solid #ccc;
+  text-align: center;
 }
 li:hover {
   cursor: pointer;
@@ -36,12 +46,12 @@ li:hover {
   background: #dbdbdb;
 }
 
-#speed1 {
+#speed1, #obj3 {
   color: red;
 }
-#speed2 {
+#speed2, #obj2 {
   color: orange;
 }
-#speed3 {
+#speed3, #obj1 {
   color: green;
 }

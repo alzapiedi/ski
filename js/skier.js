@@ -24,7 +24,7 @@ Skier.prototype.isCollidedWith = function (otherObject) {
 
 
 Skier.prototype.collideWith = function (otherObject) {
-  if (otherObject instanceof Obstacle && this.game.canCrash) {
+  if (otherObject instanceof Obstacle && this.game.canCrash  && !this.game.isJumping) {
     this.game.skiCrash();
   } else if (otherObject instanceof Ramp) {
     this.game.skiJump();

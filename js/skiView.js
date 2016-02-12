@@ -21,13 +21,23 @@ SkiView.prototype.bindKeyHandlers = function () {
       this.game.changeDirection(e.keyCode);
     }
   }.bind(this));
-  $('.options').on('click', function (e) {
+  $('.speed').on('click', function (e) {
     var s = parseInt(e.target.id.substring(5,6));
-    $('li').each(function (i, el) {
+    $('.speed').children().each(function (i, el) {
       $(el).removeClass();
     });
     $(e.target).addClass('selected');
+    debugger;
     this.game.setSpeed(s);
+  }.bind(this));
+  $('.density').on('click', function (e) {
+    var d = parseInt(e.target.id.substring(3,4));
+    $('.density').children().each(function (i, el) {
+      $(el).removeClass();
+    });
+    $(e.target).addClass('selected');
+    debugger;
+    this.game.setDensity(d);
   }.bind(this));
 }
 module.exports = SkiView;
