@@ -45,7 +45,8 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var Ski = __webpack_require__(1),
-	    SkiView = __webpack_require__(7);
+	    SkiView = __webpack_require__(7),
+	    Loading = __webpack_require__(8);
 	
 	document.addEventListener('DOMContentLoaded', function () {
 	  var canvas = document.getElementById('ski');
@@ -55,6 +56,8 @@
 	  var game = new Ski();
 	  window.ski = game;
 	  var view = new SkiView(game, ctx);
+	  // var load = new Loading(ctx);
+	  // load.animate(view.start.bind(view));
 	  view.start();
 	});
 
@@ -67,7 +70,8 @@
 	    Utils = __webpack_require__(3),
 	    Skier = __webpack_require__(4),
 	    Obstacle = __webpack_require__(5),
-	    Ramp = __webpack_require__(6);
+	    Ramp = __webpack_require__(6),
+	    Yeti = __webpack_require__(9);
 	
 	var Ski = function () {
 	  this.loadImages();
@@ -81,9 +85,13 @@
 	  this.density = 1;
 	  this.isJumping = false;
 	  this.timerStart = Date.now();
+	  this.distance = 0;
+	  this.over = false;
+	  this.monster = true;
 	  // skiImg.onload = function () {
 	  this.skier = new Skier({pos: [400, 300], game: this, img: this.skierImgs[3]});
 	  // }.bind(this);
+	
 	  this.startObjectInterval();
 	}
 	
@@ -141,6 +149,10 @@
 	  return this.timerNow;
 	}
 	
+	Ski.prototype.killSkier = function () {
+	
+	}
+	
 	
 	Ski.prototype.loadImages = function () {
 	  var ski3 = new Image();
@@ -158,6 +170,11 @@
 	  var tree3 = new Image();
 	  var rock = new Image();
 	  var ramp = new Image();
+	  var banner = new Image();
+	  var yeti = new Image();
+	  var eat = new Image();
+	
+	  yeti.src = 'img/yeti.png';
 	  ski3.src = 'img/skier3.png';
 	  ski4.src = 'img/skier4.png';
 	  ski5.src = 'img/skier5.png';
@@ -173,13 +190,18 @@
 	  tree3.src = 'img/tree3.png';
 	  rock.src = 'img/rock.png';
 	  ramp.src = 'img/ramp.png';
-	  this.skierImgs = {3: ski3, 4: ski4, 5: ski5, 6: ski6, 7: ski7, 8: ski8, 9: ski9, 10: ski10, crash: skiCrash, jump: skiJump};
+	  banner.src = 'img/banner.png';
+	  eat.src = 'img/eat.png';
+	  this.skierImgs = {3: ski3, 4: ski4, 5: ski5, 6: ski6, 7: ski7, 8: ski8, 9: ski9, 10: ski10, crash: skiCrash, jump: skiJump, eat: eat};
 	  this.obstacleImgs = {0: tree1, 1: tree2, 2: tree3, 3: rock};
 	  this.rampImg = ramp;
+	  this.banner = banner;
+	  this.yetiImg = yeti;
 	}
 	
 	Ski.prototype.allObjects = function () {
 	  var obj = this.obstacles.concat(this.ramps);
+	  if (this.yeti) { obj = obj.concat(this.yeti); }
 	  return obj;
 	}
 	
@@ -206,12 +228,14 @@
 	  ctx.clearRect(0,0,800,600);
 	  ctx.font="20px Helvetica";
 	  var timer = this.getTimer() || "0s";
-	  ctx.fillText(timer,750,25);
+	  var distance = Math.floor(this.distance) + "ft";
 	  if (!this.isJumping) { this.skier.draw(ctx, timeDelta); }
 	  this.allObjects().forEach(function (obj) {
 	    obj.draw(ctx);
 	  });
 	  if (this.isJumping) { this.skier.draw(ctx, timeDelta); }
+	  ctx.drawImage(this.banner, 0, 0);
+	  ctx.fillText(timer + " / " + distance,680,55);
 	}
 	
 	Ski.prototype.moveObjects = function (timeDelta) {
@@ -234,9 +258,28 @@
 	  this.god = false;
 	}
 	
+	Ski.prototype.setMonster = function (mon) {
+	  this.monster = !!mon;
+	}
+	
 	Ski.prototype.step = function (timeDelta) {
-	  this.moveObjects(timeDelta);
-	  this.checkCollisions();
+	  if (!this.over) {
+	    var vel = this.vels()[this.direction];
+	    this.distance -= vel[1] / 13;
+	    if (this.distance > 100 && !this.yeti && this.monster) {   // MAKE 2500
+	      var r = Math.floor(Math.random() * 1000);
+	      if (r === 666) {
+	        this.bringOutTheYeti();
+	      }
+	    }
+	    this.moveObjects(timeDelta);
+	    this.checkCollisions();
+	  }
+	}
+	
+	Ski.prototype.bringOutTheYeti = function () {
+	  var vel = this.vels()[this.direction];
+	  this.yeti = new Yeti({pos: [0, 200], vel: vel, game: this, img: this.yetiImg});
 	}
 	
 	Ski.prototype.checkCollisions = function () {
@@ -272,13 +315,14 @@
 	}
 	
 	Ski.prototype.updateVelocities = function () {
+	  var vel = this.vels()[this.direction];
 	  this.allObjects().forEach(function (obj) {
-	    obj.vel = this.vels()[this.direction];
+	    obj.vel = vel;
 	  }.bind(this));
 	}
 	
 	Ski.prototype.changeDirection = function (keyCode) {  //37 left   39 right
-	  if (!this.crashed && !this.isJumping) {
+	  if (!this.crashed && !this.isJumping && !this.over) {
 	    var dir = this.direction;
 	    if (dir === 10) {
 	      setTimeout(function () {
@@ -340,6 +384,13 @@
 	  }.bind(this), 2000);
 	}
 	
+	Ski.prototype.killSkier = function () {
+	  this.over = true;
+	  this.yeti = null;
+	  this.skier.img = this.skierImgs["eat"];
+	  this.direction = 10;
+	}
+	
 	
 	module.exports = Ski;
 
@@ -398,6 +449,10 @@
 	  return arr1[0] === arr2[0] && arr1[1] === arr2[1];
 	}
 	
+	Utils.arrayAdd = function (arr1, arr2) {
+	  return [arr1[0] + arr2[0], arr1[1] + arr2[1]];
+	}
+	
 	Utils.overlap = function (r1, r2) {
 	  return !(r2.left > r1.right ||
 	           r2.right < r1.left ||
@@ -405,8 +460,14 @@
 	           r2.bottom < r1.top);
 	}
 	
+	Utils.vector = function (pos1, pos2) {
+	  var vec_x = pos2[0] - pos1[0];
+	  var vec_y = pos2[1] - pos1[1];
+	  return [vec_x/Math.abs(vec_x), vec_y/Math.abs(vec_x)];
+	}
 	
 	
+	window.Utils = Utils;
 	module.exports = Utils;
 
 
@@ -417,12 +478,14 @@
 	var MovingObject = __webpack_require__(2),
 	    Utils = __webpack_require__(3),
 	    Obstacle = __webpack_require__(5),
-	    Ramp = __webpack_require__(6);
+	    Ramp = __webpack_require__(6),
+	    Yeti = __webpack_require__(9);
 	
 	var Skier = function (attr) {
 	  var pos = attr.pos;
 	  var game = attr.game;
 	  var img = attr.img;
+	  this.frameIndex = 0;
 	  this.animationDir = -1;
 	  MovingObject.call(this, {pos: pos, vel: [0, 0], game: game, img: img});
 	}
@@ -445,18 +508,30 @@
 	    this.game.skiCrash();
 	  } else if (otherObject instanceof Ramp && !this.game.isJumping) {
 	    this.game.skiJump();
+	  } else if (otherObject instanceof Yeti && !this.game.isJumping) {
+	    this.game.killSkier();
 	  }
 	}
 	
 	Skier.prototype.draw = function (ctx, timeDelta) {
-	  if (this.game.isJumping) {
-	    this.pos[1] += (timeDelta/(1000/60))*this.animationDir*1.6;
-	    console.log(timeDelta / (1000/60));
-	    if (this.pos[1] < 200) {
-	      this.animationDir = 1;
+	  if (!this.game.over) {
+	    if (this.game.isJumping) {
+	      this.pos[1] += (timeDelta/(1000/60))*this.animationDir*1.6;
+	      if (this.pos[1] < 200) {
+	        this.animationDir = 1;
+	      }
 	    }
-	  }
 	    ctx.drawImage(this.img, this.pos[0], this.pos[1]);
+	  } else {
+	    this.startTime = this.startTime || Date.now();
+	    var time = Date.now() - this.startTime;
+	    if (time > 100) {
+	      this.frameIndex += 1;
+	      this.startTime = Date.now();
+	      if (this.frameIndex > 4) { this.frameIndex = 4; }
+	    }
+	    ctx.drawImage(this.img, this.frameIndex * 35, 0, 35, 43, this.pos[0], this.pos[1], 35, 43);
+	  }
 	}
 	
 	
@@ -524,13 +599,16 @@
 	var SkiView = function (game, ctx) {
 	  this.game = game;
 	  this.ctx = ctx;
+	  this.stopped = false;
 	}
 	
 	SkiView.prototype.start = function () {
+	  $('.newgame').off('click');
 	  this.bindKeyHandlers();
 	  this.bindSettingsHandler();
 	  this.lastTime = 0;
-	  requestAnimationFrame(this.animate.bind(this));
+	  this.animation = requestAnimationFrame(this.animate.bind(this));
+	  this.stopped = false;
 	}
 	
 	SkiView.prototype.animate = function (time) {
@@ -538,8 +616,11 @@
 	  this.game.step(timeDelta);
 	  this.game.draw(this.ctx, timeDelta);
 	  this.lastTime = time;
-	  requestAnimationFrame(this.animate.bind(this));
+	  if (!this.stopped) {
+	    this.animation = requestAnimationFrame(this.animate.bind(this));
+	  }
 	}
+	
 	
 	SkiView.prototype.bindKeyHandlers = function () {
 	  var key;
@@ -555,9 +636,11 @@
 	
 	SkiView.prototype.unbindKeyHandlers = function () {
 	  $(document).off('keydown');
+	  $('.newgame').off('click');
 	}
 	
 	SkiView.prototype.bindSettingsHandler = function () {
+	  $('.options').css('display', 'block');
 	  $('.speed').on('click', function (e) {
 	    var s = parseInt(e.target.id.substring(5,6));
 	    $('.speed').children().each(function (i, el) {
@@ -574,19 +657,129 @@
 	    $(e.target).addClass('selected');
 	    this.game.setDensity(d);
 	  }.bind(this));
+	  $('.monster').on('click', function (e) {
+	    var mon = parseInt(e.target.id.substring(3,4));
+	    $('.monster').children().each(function (i, el) {
+	      $(el).removeClass();
+	    });
+	    $(e.target).addClass('selected');
+	    this.game.setMonster(mon);
+	  }.bind(this));
 	}
 	
 	SkiView.prototype.unbindSettingsHandler = function () {
 	  $('.speed').off('click');
 	  $('.density').off('click');
+	  $('.monster').off('click');
 	  $('.options').css('display', 'none');
 	  $('.newgame').css('display', 'block');
 	  $('.newgame').on('click', function (e) {
-	    window.location.reload();
+	    e.preventDefault();
+	    this.unbindKeyHandlers();
+	    this.game.over = true;
+	    this.stopped = true;
+	    cancelAnimationFrame(this.animation);
+	    this.game.stopObjectInterval();
+	    delete this.game;
+	    this.game = new Ski();
+	    $('.newgame').css('display', 'none');
+	    $('.options').css('display', 'block');
+	    this.start();
 	  }.bind(this));
 	
 	}
 	module.exports = SkiView;
+
+
+/***/ },
+/* 8 */
+/***/ function(module, exports) {
+
+	var Loading = function (ctx) {
+	  this.ctx = ctx;
+	  this.loadImages();
+	}
+	
+	Loading.prototype.animate = function (callback) {
+	  this.img1.onload = function () {
+	    this.ctx.drawImage(this.img1,0,0,800,600);
+	    setTimeout(function () {
+	      this.ctx.drawImage(this.img2,0,0,800,600);
+	      this.ctx.drawImage(this.img3,300,400);
+	      this.mouseMove();
+	      setTimeout(callback, 3000);
+	    }.bind(this), 4000);
+	  }.bind(this);
+	}
+	
+	Loading.prototype.loadImages = function () {
+	  var img1 = new Image();
+	  img1.src = 'img/w95.png';
+	  this.img1 = img1;
+	  var img2 = new Image();
+	  img2.src = 'img/w95d.png';
+	  this.img2 = img2;
+	  var img3 = new Image();
+	  img3.src = 'img/cursor.png';
+	  this.img3 = img3;
+	}
+	
+	Loading.prototype.mouseMove = function () {
+	  // 150, 335
+	  var c_x = 300;
+	  var c_y = 400;
+	  var interval = setInterval(function () {
+	    c_x -= 4.6;
+	    c_y -= 2;
+	    this.ctx.drawImage(this.img2,0,0,800,600);
+	    this.ctx.drawImage(this.img3,c_x,c_y);
+	    if (c_y < 335) {
+	      clearInterval(interval);
+	      interval = 0;
+	    }
+	  }.bind(this), 50);
+	}
+	
+	module.exports = Loading;
+
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var MovingObject = __webpack_require__(2),
+	    Utils = __webpack_require__(3);
+	var Yeti = function (attrs) {
+	  this.frameIndex = 1;
+	  this.startTime = Date.now();
+	  MovingObject.call(this, attrs);
+	}
+	Utils.inherits(Yeti, MovingObject);
+	
+	Yeti.prototype.move = function (timeDelta) { // happens every 16ms ~> 60fps
+	  var skierPos = this.game.skier.pos;
+	  this.vel = Utils.vector(this.pos, skierPos);
+	  console.log(this.pos);
+	  this.pos[0] += this.vel[0] * timeDelta / (1000/60);
+	  this.pos[1] += this.vel[1] * timeDelta / (1000/60);
+	
+	}
+	
+	Yeti.prototype.draw = function (ctx) {
+	  var time = Date.now() - this.startTime;
+	  if (time > 100) {
+	    this.frameIndex += 1;
+	    this.startTime = Date.now();
+	    if (this.frameIndex > 2) { this.frameIndex = 1; }
+	  }
+	  ctx.drawImage(this.img, this.frameIndex * 32, 0, 32, 42, this.pos[0], this.pos[1], 32, 42);
+	}
+	
+	Yeti.prototype.getHitBox = function () {
+	  var pos = this.pos;
+	  return {top: pos[1] + 10, left: pos[0] + 10, right: pos[0] + 20, bottom: pos[1] + 35};
+	}
+	module.exports = Yeti;
 
 
 /***/ }

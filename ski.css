@@ -22,7 +22,7 @@ h2 {
 .options {
   float: left;
   width: 150px;
-  display: block;
+  display: none;
 }
 ul {
   list-style: none;
@@ -59,12 +59,12 @@ li:hover {
   font-size: 14px;
 }
 
-#speed1, #obj3 {
+#speed1, #obj3, #mon0 {
   color: red;
 }
 #speed2, #obj2 {
   color: orange;
 }
-#speed3, #obj1 {
+#speed3, #obj1, #mon1 {
   color: green;
 }

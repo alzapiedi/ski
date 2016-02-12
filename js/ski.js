@@ -2,7 +2,8 @@ var MovingObject = require('./movingObject'),
     Utils = require('./utils'),
     Skier = require('./skier'),
     Obstacle = require('./obstacle'),
-    Ramp = require('./ramp');
+    Ramp = require('./ramp'),
+    Yeti = require('./yeti');
 
 var Ski = function () {
   this.loadImages();
@@ -16,9 +17,13 @@ var Ski = function () {
   this.density = 1;
   this.isJumping = false;
   this.timerStart = Date.now();
+  this.distance = 0;
+  this.over = false;
+  this.monster = true;
   // skiImg.onload = function () {
   this.skier = new Skier({pos: [400, 300], game: this, img: this.skierImgs[3]});
   // }.bind(this);
+
   this.startObjectInterval();
 }
 
@@ -76,6 +81,10 @@ Ski.prototype.getTimer = function () {
   return this.timerNow;
 }
 
+Ski.prototype.killSkier = function () {
+
+}
+
 
 Ski.prototype.loadImages = function () {
   var ski3 = new Image();
@@ -93,6 +102,11 @@ Ski.prototype.loadImages = function () {
   var tree3 = new Image();
   var rock = new Image();
   var ramp = new Image();
+  var banner = new Image();
+  var yeti = new Image();
+  var eat = new Image();
+
+  yeti.src = 'img/yeti.png';
   ski3.src = 'img/skier3.png';
   ski4.src = 'img/skier4.png';
   ski5.src = 'img/skier5.png';
@@ -108,13 +122,18 @@ Ski.prototype.loadImages = function () {
   tree3.src = 'img/tree3.png';
   rock.src = 'img/rock.png';
   ramp.src = 'img/ramp.png';
-  this.skierImgs = {3: ski3, 4: ski4, 5: ski5, 6: ski6, 7: ski7, 8: ski8, 9: ski9, 10: ski10, crash: skiCrash, jump: skiJump};
+  banner.src = 'img/banner.png';
+  eat.src = 'img/eat.png';
+  this.skierImgs = {3: ski3, 4: ski4, 5: ski5, 6: ski6, 7: ski7, 8: ski8, 9: ski9, 10: ski10, crash: skiCrash, jump: skiJump, eat: eat};
   this.obstacleImgs = {0: tree1, 1: tree2, 2: tree3, 3: rock};
   this.rampImg = ramp;
+  this.banner = banner;
+  this.yetiImg = yeti;
 }
 
 Ski.prototype.allObjects = function () {
   var obj = this.obstacles.concat(this.ramps);
+  if (this.yeti) { obj = obj.concat(this.yeti); }
   return obj;
 }
 
@@ -141,12 +160,14 @@ Ski.prototype.draw = function (ctx, timeDelta) {
   ctx.clearRect(0,0,800,600);
   ctx.font="20px Helvetica";
   var timer = this.getTimer() || "0s";
-  ctx.fillText(timer,750,25);
+  var distance = Math.floor(this.distance) + "ft";
   if (!this.isJumping) { this.skier.draw(ctx, timeDelta); }
   this.allObjects().forEach(function (obj) {
     obj.draw(ctx);
   });
   if (this.isJumping) { this.skier.draw(ctx, timeDelta); }
+  ctx.drawImage(this.banner, 0, 0);
+  ctx.fillText(timer + " / " + distance,680,55);
 }
 
 Ski.prototype.moveObjects = function (timeDelta) {
@@ -169,9 +190,28 @@ Ski.prototype.disableGodMode = function () {
   this.god = false;
 }
 
+Ski.prototype.setMonster = function (mon) {
+  this.monster = !!mon;
+}
+
 Ski.prototype.step = function (timeDelta) {
-  this.moveObjects(timeDelta);
-  this.checkCollisions();
+  if (!this.over) {
+    var vel = this.vels()[this.direction];
+    this.distance -= vel[1] / 13;
+    if (this.distance > 100 && !this.yeti && this.monster) {   // MAKE 2500
+      var r = Math.floor(Math.random() * 1000);
+      if (r === 666) {
+        this.bringOutTheYeti();
+      }
+    }
+    this.moveObjects(timeDelta);
+    this.checkCollisions();
+  }
+}
+
+Ski.prototype.bringOutTheYeti = function () {
+  var vel = this.vels()[this.direction];
+  this.yeti = new Yeti({pos: [0, 200], vel: vel, game: this, img: this.yetiImg});
 }
 
 Ski.prototype.checkCollisions = function () {
@@ -207,13 +247,14 @@ Ski.prototype.addObject = function () {
 }
 
 Ski.prototype.updateVelocities = function () {
+  var vel = this.vels()[this.direction];
   this.allObjects().forEach(function (obj) {
-    obj.vel = this.vels()[this.direction];
+    obj.vel = vel;
   }.bind(this));
 }
 
 Ski.prototype.changeDirection = function (keyCode) {  //37 left   39 right
-  if (!this.crashed && !this.isJumping) {
+  if (!this.crashed && !this.isJumping && !this.over) {
     var dir = this.direction;
     if (dir === 10) {
       setTimeout(function () {
@@ -273,6 +314,13 @@ Ski.prototype.skiJump = function () {
     this.skier.animationDir = -1;
     this.skier.pos = [400, 300];
   }.bind(this), 2000);
+}
+
+Ski.prototype.killSkier = function () {
+  this.over = true;
+  this.yeti = null;
+  this.skier.img = this.skierImgs["eat"];
+  this.direction = 10;
 }
 
 

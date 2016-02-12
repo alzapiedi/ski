@@ -3,13 +3,16 @@ var Ski = require('./ski');
 var SkiView = function (game, ctx) {
   this.game = game;
   this.ctx = ctx;
+  this.stopped = false;
 }
 
 SkiView.prototype.start = function () {
+  $('.newgame').off('click');
   this.bindKeyHandlers();
   this.bindSettingsHandler();
   this.lastTime = 0;
-  requestAnimationFrame(this.animate.bind(this));
+  this.animation = requestAnimationFrame(this.animate.bind(this));
+  this.stopped = false;
 }
 
 SkiView.prototype.animate = function (time) {
@@ -17,8 +20,11 @@ SkiView.prototype.animate = function (time) {
   this.game.step(timeDelta);
   this.game.draw(this.ctx, timeDelta);
   this.lastTime = time;
-  requestAnimationFrame(this.animate.bind(this));
+  if (!this.stopped) {
+    this.animation = requestAnimationFrame(this.animate.bind(this));
+  }
 }
+
 
 SkiView.prototype.bindKeyHandlers = function () {
   var key;
@@ -34,9 +40,11 @@ SkiView.prototype.bindKeyHandlers = function () {
 
 SkiView.prototype.unbindKeyHandlers = function () {
   $(document).off('keydown');
+  $('.newgame').off('click');
 }
 
 SkiView.prototype.bindSettingsHandler = function () {
+  $('.options').css('display', 'block');
   $('.speed').on('click', function (e) {
     var s = parseInt(e.target.id.substring(5,6));
     $('.speed').children().each(function (i, el) {
@@ -53,15 +61,34 @@ SkiView.prototype.bindSettingsHandler = function () {
     $(e.target).addClass('selected');
     this.game.setDensity(d);
   }.bind(this));
+  $('.monster').on('click', function (e) {
+    var mon = parseInt(e.target.id.substring(3,4));
+    $('.monster').children().each(function (i, el) {
+      $(el).removeClass();
+    });
+    $(e.target).addClass('selected');
+    this.game.setMonster(mon);
+  }.bind(this));
 }
 
 SkiView.prototype.unbindSettingsHandler = function () {
   $('.speed').off('click');
   $('.density').off('click');
+  $('.monster').off('click');
   $('.options').css('display', 'none');
   $('.newgame').css('display', 'block');
   $('.newgame').on('click', function (e) {
-    window.location.reload();
+    e.preventDefault();
+    this.unbindKeyHandlers();
+    this.game.over = true;
+    this.stopped = true;
+    cancelAnimationFrame(this.animation);
+    this.game.stopObjectInterval();
+    delete this.game;
+    this.game = new Ski();
+    $('.newgame').css('display', 'none');
+    $('.options').css('display', 'block');
+    this.start();
   }.bind(this));
 
 }
