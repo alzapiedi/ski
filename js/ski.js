@@ -209,7 +209,7 @@ Ski.prototype.step = function (timeDelta) {
   if (!this.over) {
     var vel = this.vels()[this.direction];
     this.distance -= vel[1] / 13;
-    if (this.distance > 100 && !this.yeti && this.monster) {   // MAKE 2500
+    if (this.distance > 1000 && !this.yeti && this.monster) {   // MAKE 2500
       var r = Math.floor(Math.random() * 1000);
       if (r === 666) {
         this.bringOutTheYeti();
