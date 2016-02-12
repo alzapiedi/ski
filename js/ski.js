@@ -47,6 +47,7 @@ Ski.prototype.seedObjects = function () {
   this.allObjects().forEach(function (obj) {
     var r = Math.random() * 200 + 100;
     obj.pos[1] -= r;
+    obj.pos[0] -= 600;
   });
 }
 
