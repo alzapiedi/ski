@@ -53,6 +53,7 @@
 	  canvas.height = 600;
 	  canvas.width = 800;
 	  var game = new Ski();
+	  window.ski = game;
 	  var view = new SkiView(game, ctx);
 	  view.start();
 	});
@@ -71,6 +72,7 @@
 	var Ski = function () {
 	  this.loadImages();
 	  this.obstacles = [];
+	  this.god = false;
 	  this.ramps = [];
 	  this.crashed = false;
 	  this.canCrash = true;
@@ -221,6 +223,14 @@
 	  this.allObjects().forEach(function (obj) {
 	    obj.shift(n);
 	  });
+	}
+	
+	Ski.prototype.enableGodMode = function () {
+	  this.god = true;
+	}
+	
+	Ski.prototype.disableGodMode = function () {
+	  this.god = false;
 	}
 	
 	Ski.prototype.step = function () {
@@ -424,6 +434,7 @@
 	}
 	
 	Skier.prototype.isCollidedWith = function (otherObject) {
+	  if (this.game.god) { return false; }
 	  return Utils.overlap(this.getHitBox(), otherObject.getHitBox());
 	};
 	

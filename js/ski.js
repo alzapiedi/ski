@@ -7,6 +7,7 @@ var MovingObject = require('./movingObject'),
 var Ski = function () {
   this.loadImages();
   this.obstacles = [];
+  this.god = false;
   this.ramps = [];
   this.crashed = false;
   this.canCrash = true;
@@ -157,6 +158,14 @@ Ski.prototype.shiftObjects = function (n) {
   this.allObjects().forEach(function (obj) {
     obj.shift(n);
   });
+}
+
+Ski.prototype.enableGodMode = function () {
+  this.god = true;
+}
+
+Ski.prototype.disableGodMode = function () {
+  this.god = false;
 }
 
 Ski.prototype.step = function () {

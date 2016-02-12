@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
   canvas.height = 600;
   canvas.width = 800;
   var game = new Ski();
+  window.ski = game;
   var view = new SkiView(game, ctx);
   view.start();
 });

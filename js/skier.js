@@ -19,6 +19,7 @@ Skier.prototype.getHitBox = function () {
 }
 
 Skier.prototype.isCollidedWith = function (otherObject) {
+  if (this.game.god) { return false; }
   return Utils.overlap(this.getHitBox(), otherObject.getHitBox());
 };
 
