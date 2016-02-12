@@ -188,7 +188,7 @@
 	    if ( this.direction > 3 && this.direction < 9 ) {
 	      this.addObject();
 	    }
-	  }.bind(this), (300/this.speed)/this.density);
+	  }.bind(this), (250/this.speed)/this.density);
 	}
 	
 	Ski.prototype.stopObjectInterval = function () {
@@ -197,7 +197,8 @@
 	}
 	
 	Ski.prototype.randomPosition = function () {
-	  var x = Math.floor(Math.random() * 800);
+	  var x = Math.floor(Math.random() * 1000) - 100;
+	  x += (6 - this.direction) * 200;
 	  return [x, 600];
 	}
 	
