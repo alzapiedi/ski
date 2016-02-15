@@ -268,9 +268,9 @@
 	  if (!this.over) {
 	    var vel = this.vels()[this.direction];
 	    this.distance -= vel[1] / 13;
-	    if (this.distance > 1 && !this.yeti && this.monster) {   // MAKE 2500
-	      var r = Math.floor(Math.random() * 100);
-	      if (r === 66) {
+	    if (this.distance > 750 && !this.yeti && this.monster) {   // MAKE 2500
+	      var r = Math.floor(Math.random() * 1000);
+	      if (r === 666) {
 	        this.bringOutTheYeti();
 	      }
 	    }
