@@ -292,7 +292,7 @@ Ski.prototype.updateCurrentVelocity = function () {
       this.velocity = [0, 0];
       return;
     }
-    var f = 22/this.speed;
+    var f = 20/this.speed;
     if (v[0] > target[0]) { this.velocity[0] -= (v[0]-target[0])/f; }
     else if (v[0] < target[0]) { this.velocity[0] += (target[0]-v[0])/f; }
     if (v[1] > target[1]) { this.velocity[1] -= (v[1]-target[1])/f; }
@@ -316,6 +316,9 @@ Ski.prototype.changeDirection = function (keyCode) {  //37 left   39 right
     } else if (keyCode === 39 && dir > 3 && dir < 9) {
       this.direction -= 1;
     } else if (keyCode === 40) {
+      if (!this.objInterval) {
+        this.startObjectInterval();
+      }
       this.direction = 6;
     } else if (keyCode === 37 && dir === 9) {
       this.shiftObjects(10);
@@ -343,7 +346,6 @@ Ski.prototype.skiCrash = function () {
       this.crashed = false;
       this.skier.img = this.skierImgs[this.direction];
       this.updateVelocities();
-      this.startObjectInterval();
     }
   }.bind(this), 1000);
 }
