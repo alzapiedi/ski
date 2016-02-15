@@ -27,10 +27,13 @@ Yeti.prototype.move = function (timeDelta) { // 16ms
       this.vel = [this.vel[0]*3, this.vel[1]*3];
     }
   } else {
-    this.vel = [this.vel[0], -1.3];
+    this.vel = [this.vel[0], -0.5];
   }
-  if (this.pos[1] < 80) {
+  if (this.pos[1] < 20) {
     this.vel = [0, -2.5];
+  }
+  if (Math.abs(this.pos[0] - skierPos[0]) > 200 || Utils.distance(this.pos, skierPos > 300)) {
+    this.vel = Utils.scale(this.vel, 4);
   }
   this.pos[0] += this.vel[0] * timeDelta / (1000/60);
   this.pos[1] += this.vel[1] * timeDelta / (1000/60);

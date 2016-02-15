@@ -268,9 +268,9 @@
 	  if (!this.over) {
 	    var vel = this.vels()[this.direction];
 	    this.distance -= vel[1] / 13;
-	    if (this.distance > 750 && !this.yeti && this.monster) {   // MAKE 2500
-	      var r = Math.floor(Math.random() * 1000);
-	      if (r === 666) {
+	    if (this.distance > 1 && !this.yeti && this.monster) {   // MAKE 2500
+	      var r = Math.floor(Math.random() * 100);
+	      if (r === 66) {
 	        this.bringOutTheYeti();
 	      }
 	    }
@@ -297,7 +297,7 @@
 	
 	Ski.prototype.addObject = function () {
 	  var i = Math.floor(Math.random() * 10);
-	  if (i > 2) {
+	  if (i > 1) {
 	    var j = Math.floor(Math.random() * 4);
 	    var obstacle = new Obstacle({
 	      pos: this.randomPosition(),
@@ -473,6 +473,17 @@
 	  return [vec_x/normal, vec_y/normal];
 	}
 	
+	Utils.scale = function (vector, scaleF) {
+	  return [vector[0] * scaleF, vector[1] * scaleF];
+	}
+	
+	Utils.distance = function (pos1, pos2) {
+	  var dx = pos1[0] - pos2[0];
+	  var dy = pos1[1] - pos2[1];
+	  return Math.sqrt(dx * dx + dy * dy);
+	}
+	
+	
 	
 	window.Utils = Utils;
 	module.exports = Utils;
@@ -563,11 +574,11 @@
 	  if (this.style === 0) {
 	    return {top: pos[1] + 42, bottom: pos[1] + 60, left: pos[0] + 10, right: pos[0] + 25};
 	  } else if (this.style === 1) {
-	    return {top: pos[1] + 17, bottom: pos[1] + 30, left: pos[0] + 6, right: pos[0] + 15};
+	    return {top: pos[1] + 17, bottom: pos[1] + 30, left: pos[0] + 6, right: pos[0] + 18};
 	  } else if (this.style === 2) {
 	    return {top: pos[1] + 18, bottom: pos[1] + 30, left: pos[0] + 11, right: pos[0] + 19};
 	  } else {
-	    return {top: pos[1] + 5, bottom: pos[1] + 12, left: pos[0], right: pos[0] + 15};
+	    return {top: pos[1] + 5, bottom: pos[1] + 12, left: pos[0], right: pos[0] + 18};
 	  }
 	}
 	
@@ -630,10 +641,13 @@
 	      this.vel = [this.vel[0]*3, this.vel[1]*3];
 	    }
 	  } else {
-	    this.vel = [this.vel[0], -1.3];
+	    this.vel = [this.vel[0], -0.5];
 	  }
-	  if (this.pos[1] < 80) {
+	  if (this.pos[1] < 20) {
 	    this.vel = [0, -2.5];
+	  }
+	  if (Math.abs(this.pos[0] - skierPos[0]) > 200 || Utils.distance(this.pos, skierPos > 300)) {
+	    this.vel = Utils.scale(this.vel, 4);
 	  }
 	  this.pos[0] += this.vel[0] * timeDelta / (1000/60);
 	  this.pos[1] += this.vel[1] * timeDelta / (1000/60);

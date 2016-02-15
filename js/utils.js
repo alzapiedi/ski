@@ -32,6 +32,17 @@ Utils.vector = function (pos1, pos2) {
   return [vec_x/normal, vec_y/normal];
 }
 
+Utils.scale = function (vector, scaleF) {
+  return [vector[0] * scaleF, vector[1] * scaleF];
+}
+
+Utils.distance = function (pos1, pos2) {
+  var dx = pos1[0] - pos2[0];
+  var dy = pos1[1] - pos2[1];
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+
 
 window.Utils = Utils;
 module.exports = Utils;
