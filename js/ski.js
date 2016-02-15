@@ -254,7 +254,7 @@ Ski.prototype.addObject = function () {
 }
 
 Ski.prototype.overlappingObject = function (testPosition) {
-  var testHitbox = { top: testPosition[1], left: testPosition[0], right: testPosition[0] + 20, bottom: testPosition[1] + 50};
+  var testHitbox = { top: testPosition[1] - 10, left: testPosition[0] - 10, right: testPosition[0] + 20, bottom: testPosition[1] + 50};
   var test = false;
   var hitbox;
   this.allObjects().forEach(function (obj) {
