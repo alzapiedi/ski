@@ -3,6 +3,7 @@ var MovingObject = require('./movingObject'),
 
 var Obstacle = function (attr) {
   this.style = attr.style;
+  this.id = attr.id;
   MovingObject.call(this, attr);
 }
 Utils.inherits(Obstacle, MovingObject);

@@ -19,6 +19,7 @@ var Ski = function (attr) {
   this.timerStart = Date.now();
   this.distance = 0;
   this.over = false;
+  this.objectId = 1;
   this.velocity = [0, 0];
   this.physics = attr.physics;
   this.monster = attr.monster;
@@ -248,7 +249,8 @@ Ski.prototype.addObject = function () {
       vel: vel,
       game: this,
       img: this.obstacleImgs[j],
-      style: j
+      style: j,
+      id: this.objectId
     });
     this.obstacles.push(obstacle);
   } else {
@@ -260,6 +262,7 @@ Ski.prototype.addObject = function () {
     });
     this.ramps.push(ramp);
   }
+  this.objectId += 1;
 }
 
 Ski.prototype.overlappingObject = function (testPosition) {
@@ -337,7 +340,6 @@ Ski.prototype.skiCrash = function () {
   this.direction = 10;
   this.skier.img = this.skierImgs["crash"];
   this.crashed = true;
-  this.canCrash = false;
   this.allObjects().forEach(function (obj) {
     obj.vel = [0, 0];
   });

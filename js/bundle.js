@@ -88,6 +88,7 @@
 	  this.timerStart = Date.now();
 	  this.distance = 0;
 	  this.over = false;
+	  this.objectId = 1;
 	  this.velocity = [0, 0];
 	  this.physics = attr.physics;
 	  this.monster = attr.monster;
@@ -317,7 +318,8 @@
 	      vel: vel,
 	      game: this,
 	      img: this.obstacleImgs[j],
-	      style: j
+	      style: j,
+	      id: this.objectId
 	    });
 	    this.obstacles.push(obstacle);
 	  } else {
@@ -329,6 +331,7 @@
 	    });
 	    this.ramps.push(ramp);
 	  }
+	  this.objectId += 1;
 	}
 	
 	Ski.prototype.overlappingObject = function (testPosition) {
@@ -406,7 +409,6 @@
 	  this.direction = 10;
 	  this.skier.img = this.skierImgs["crash"];
 	  this.crashed = true;
-	  this.canCrash = false;
 	  this.allObjects().forEach(function (obj) {
 	    obj.vel = [0, 0];
 	  });
@@ -550,6 +552,7 @@
 	  var img = attr.img;
 	  this.frameIndex = 0;
 	  this.animationDir = -1;
+	  this.lastCollision = {id: 0};
 	  MovingObject.call(this, {pos: pos, vel: [0, 0], game: game, img: img});
 	}
 	Utils.inherits(Skier, MovingObject);
@@ -567,7 +570,8 @@
 	
 	
 	Skier.prototype.collideWith = function (otherObject) {
-	  if (otherObject instanceof Obstacle && this.game.canCrash  && !this.game.isJumping) {
+	  if (otherObject instanceof Obstacle && this.game.canCrash  && !this.game.isJumping && !(otherObject.id === this.lastCollision.id)) {
+	    this.lastCollision = otherObject;
 	    this.game.skiCrash();
 	  } else if (otherObject instanceof Ramp && !this.game.isJumping) {
 	    this.game.skiJump();
@@ -610,6 +614,7 @@
 	
 	var Obstacle = function (attr) {
 	  this.style = attr.style;
+	  this.id = attr.id;
 	  MovingObject.call(this, attr);
 	}
 	Utils.inherits(Obstacle, MovingObject);

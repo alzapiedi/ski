@@ -10,6 +10,7 @@ var Skier = function (attr) {
   var img = attr.img;
   this.frameIndex = 0;
   this.animationDir = -1;
+  this.lastCollision = {id: 0};
   MovingObject.call(this, {pos: pos, vel: [0, 0], game: game, img: img});
 }
 Utils.inherits(Skier, MovingObject);
@@ -27,7 +28,8 @@ Skier.prototype.isCollidedWith = function (otherObject) {
 
 
 Skier.prototype.collideWith = function (otherObject) {
-  if (otherObject instanceof Obstacle && this.game.canCrash  && !this.game.isJumping) {
+  if (otherObject instanceof Obstacle && this.game.canCrash  && !this.game.isJumping && !(otherObject.id === this.lastCollision.id)) {
+    this.lastCollision = otherObject;
     this.game.skiCrash();
   } else if (otherObject instanceof Ramp && !this.game.isJumping) {
     this.game.skiJump();
