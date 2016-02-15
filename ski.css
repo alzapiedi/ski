@@ -67,12 +67,12 @@ li:hover {
   font-family: Helvetica;
 }
 
-#speed1, #obj3, #mon0 {
+#speed1, #obj3, #mon0, #phys0 {
   color: red;
 }
 #speed2, #obj2 {
   color: orange;
 }
-#speed3, #obj1, #mon1 {
+#speed3, #obj1, #mon1, #phys1 {
   color: green;
 }

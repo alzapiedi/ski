@@ -19,6 +19,8 @@ var Ski = function (attr) {
   this.timerStart = Date.now();
   this.distance = 0;
   this.over = false;
+  this.velocity = [0, 0];
+  this.physics = attr.physics;
   this.monster = attr.monster;
   // skiImg.onload = function () {
   this.skier = new Skier({pos: [400, 300], game: this, img: this.skierImgs[3]});
@@ -38,6 +40,10 @@ Ski.prototype.setDensity = function (d) {
   this.stopObjectInterval();
   this.density = d;
   this.startObjectInterval()
+}
+
+Ski.prototype.setPhysics = function (p) {
+  p ? this.physics = true : this.physics = false;
 }
 
 Ski.prototype.seedObjects = function () {
@@ -205,6 +211,8 @@ Ski.prototype.step = function (timeDelta) {
         this.bringOutTheYeti();
       }
     }
+    this.updateCurrentVelocity();
+    this.updateVelocities();
     this.moveObjects(timeDelta);
     this.checkCollisions();
   }
@@ -229,6 +237,7 @@ Ski.prototype.checkCollisions = function () {
 Ski.prototype.addObject = function () {
   var i = Math.floor(Math.random() * 10);
   var randomPos = this.randomPosition();
+  var vel = this.velocity;
   while (this.overlappingObject(randomPos)) {
     randomPos = this.randomPosition();
   }
@@ -236,7 +245,7 @@ Ski.prototype.addObject = function () {
     var j = Math.floor(Math.random() * 4);
     var obstacle = new Obstacle({
       pos: randomPos,
-      vel: this.vels()[this.direction],
+      vel: vel,
       game: this,
       img: this.obstacleImgs[j],
       style: j
@@ -245,7 +254,7 @@ Ski.prototype.addObject = function () {
   } else {
     var ramp = new Ramp({
       pos: randomPos,
-      vel: this.vels()[this.direction],
+      vel: vel,
       game: this,
       img: this.rampImg
     });
@@ -265,10 +274,29 @@ Ski.prototype.overlappingObject = function (testPosition) {
 }
 
 Ski.prototype.updateVelocities = function () {
-  var vel = this.vels()[this.direction];
+  var velPhysics = this.velocity;
+  var velNoPhysics = this.vels()[this.direction];
   this.allObjects().forEach(function (obj) {
-    obj.vel = vel;
+    if (this.physics) {
+      obj.vel = velPhysics;
+    } else {
+      obj.vel = velNoPhysics;
+    }
   }.bind(this));
+}
+
+Ski.prototype.updateCurrentVelocity = function () {
+    var target = this.vels()[this.direction];
+    var v = this.velocity;
+    if (this.direction === 10) {
+      this.velocity = [0, 0];
+      return;
+    }
+    var f = 22/this.speed;
+    if (v[0] > target[0]) { this.velocity[0] -= (v[0]-target[0])/f; }
+    else if (v[0] < target[0]) { this.velocity[0] += (target[0]-v[0])/f; }
+    if (v[1] > target[1]) { this.velocity[1] -= (v[1]-target[1])/f; }
+    else if (v[1] < target[1]) { this.velocity[1] += (target[1]-v[1])/f; }
 }
 
 Ski.prototype.changeDirection = function (keyCode) {  //37 left   39 right

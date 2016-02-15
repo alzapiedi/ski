@@ -45,15 +45,15 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var Ski = __webpack_require__(1),
-	    SkiView = __webpack_require__(8),
-	    Loading = __webpack_require__(9);
+	    SkiView = __webpack_require__(2),
+	    Loading = __webpack_require__(3);
 	
 	document.addEventListener('DOMContentLoaded', function () {
 	  var canvas = document.getElementById('ski');
 	  var ctx = canvas.getContext("2d");
 	  canvas.height = 600;
 	  canvas.width = 800;
-	  var gameSettings = {speed: 1, density: 2, monster: true}
+	  var gameSettings = {speed: 1, density: 2, monster: true, physics: true}
 	  var game = new Ski(gameSettings);
 	  window.ski = game;
 	  var view = new SkiView(game, ctx);
@@ -67,12 +67,12 @@
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var MovingObject = __webpack_require__(2),
-	    Utils = __webpack_require__(3),
-	    Skier = __webpack_require__(4),
-	    Obstacle = __webpack_require__(5),
-	    Ramp = __webpack_require__(6),
-	    Yeti = __webpack_require__(7);
+	var MovingObject = __webpack_require__(4),
+	    Utils = __webpack_require__(5),
+	    Skier = __webpack_require__(6),
+	    Obstacle = __webpack_require__(7),
+	    Ramp = __webpack_require__(8),
+	    Yeti = __webpack_require__(9);
 	
 	var Ski = function (attr) {
 	  this.loadImages();
@@ -88,6 +88,8 @@
 	  this.timerStart = Date.now();
 	  this.distance = 0;
 	  this.over = false;
+	  this.velocity = [0, 0];
+	  this.physics = attr.physics;
 	  this.monster = attr.monster;
 	  // skiImg.onload = function () {
 	  this.skier = new Skier({pos: [400, 300], game: this, img: this.skierImgs[3]});
@@ -107,6 +109,10 @@
 	  this.stopObjectInterval();
 	  this.density = d;
 	  this.startObjectInterval()
+	}
+	
+	Ski.prototype.setPhysics = function (p) {
+	  p ? this.physics = true : this.physics = false;
 	}
 	
 	Ski.prototype.seedObjects = function () {
@@ -274,6 +280,8 @@
 	        this.bringOutTheYeti();
 	      }
 	    }
+	    this.updateCurrentVelocity();
+	    this.updateVelocities();
 	    this.moveObjects(timeDelta);
 	    this.checkCollisions();
 	  }
@@ -298,6 +306,7 @@
 	Ski.prototype.addObject = function () {
 	  var i = Math.floor(Math.random() * 10);
 	  var randomPos = this.randomPosition();
+	  var vel = this.velocity;
 	  while (this.overlappingObject(randomPos)) {
 	    randomPos = this.randomPosition();
 	  }
@@ -305,7 +314,7 @@
 	    var j = Math.floor(Math.random() * 4);
 	    var obstacle = new Obstacle({
 	      pos: randomPos,
-	      vel: this.vels()[this.direction],
+	      vel: vel,
 	      game: this,
 	      img: this.obstacleImgs[j],
 	      style: j
@@ -314,7 +323,7 @@
 	  } else {
 	    var ramp = new Ramp({
 	      pos: randomPos,
-	      vel: this.vels()[this.direction],
+	      vel: vel,
 	      game: this,
 	      img: this.rampImg
 	    });
@@ -334,10 +343,29 @@
 	}
 	
 	Ski.prototype.updateVelocities = function () {
-	  var vel = this.vels()[this.direction];
+	  var velPhysics = this.velocity;
+	  var velNoPhysics = this.vels()[this.direction];
 	  this.allObjects().forEach(function (obj) {
-	    obj.vel = vel;
+	    if (this.physics) {
+	      obj.vel = velPhysics;
+	    } else {
+	      obj.vel = velNoPhysics;
+	    }
 	  }.bind(this));
+	}
+	
+	Ski.prototype.updateCurrentVelocity = function () {
+	    var target = this.vels()[this.direction];
+	    var v = this.velocity;
+	    if (this.direction === 10) {
+	      this.velocity = [0, 0];
+	      return;
+	    }
+	    var f = 22/this.speed;
+	    if (v[0] > target[0]) { this.velocity[0] -= (v[0]-target[0])/f; }
+	    else if (v[0] < target[0]) { this.velocity[0] += (target[0]-v[0])/f; }
+	    if (v[1] > target[1]) { this.velocity[1] -= (v[1]-target[1])/f; }
+	    else if (v[1] < target[1]) { this.velocity[1] += (target[1]-v[1])/f; }
 	}
 	
 	Ski.prototype.changeDirection = function (keyCode) {  //37 left   39 right
@@ -420,280 +448,6 @@
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Utils = __webpack_require__(3);
-	
-	var MovingObject = function (attr) {
-	  this.pos = attr.pos;
-	  this.vel = attr.vel;
-	  this.game = attr.game;
-	  this.img = attr.img;
-	}
-	
-	MovingObject.prototype.move = function (timeDelta) {
-	  if (!this.vel) { debugger; }
-	  this.pos[0] += this.vel[0] * timeDelta / (1000/60);
-	  this.pos[1] += this.vel[1] * timeDelta / (1000/60);
-	  if (this.pos[1] < -50) {
-	    this.game.remove(this);
-	  }
-	}
-	
-	MovingObject.prototype.shift = function (n) {
-	  this.pos[0] += n;
-	}
-	
-	MovingObject.prototype.draw = function (ctx) {
-	  ctx.drawImage(this.img, this.pos[0], this.pos[1]);
-	}
-	
-	
-	module.exports = MovingObject;
-
-
-/***/ },
-/* 3 */
-/***/ function(module, exports) {
-
-	var Utils = {};
-	
-	Utils.inherits = function (subclass, parentClass) {
-	  var Surrogate = function () {};
-	  Surrogate.prototype = parentClass.prototype;
-	  subclass.prototype = new Surrogate();
-	  subclass.prototype.constructor = subclass;
-	}
-	
-	Utils.arrayEquals = function (arr1, arr2) {
-	  if (!arr1 || !arr2) {
-	    return false;
-	  }
-	  return arr1[0] === arr2[0] && arr1[1] === arr2[1];
-	}
-	
-	Utils.arrayAdd = function (arr1, arr2) {
-	  return [arr1[0] + arr2[0], arr1[1] + arr2[1]];
-	}
-	
-	Utils.overlap = function (r1, r2) {
-	  return !(r2.left > r1.right ||
-	           r2.right < r1.left ||
-	           r2.top > r1.bottom ||
-	           r2.bottom < r1.top);
-	}
-	
-	Utils.vector = function (pos1, pos2) {
-	  var vec_x = pos2[0] - pos1[0];
-	  var vec_y = pos2[1] - pos1[1];
-	  var normal = Math.abs(vec_x) > Math.abs(vec_y) ? Math.abs(vec_x) : Math.abs(vec_y);
-	  return [vec_x/normal, vec_y/normal];
-	}
-	
-	Utils.scale = function (vector, scaleF) {
-	  return [vector[0] * scaleF, vector[1] * scaleF];
-	}
-	
-	Utils.distance = function (pos1, pos2) {
-	  var dx = pos1[0] - pos2[0];
-	  var dy = pos1[1] - pos2[1];
-	  return Math.sqrt(dx * dx + dy * dy);
-	}
-	
-	
-	
-	window.Utils = Utils;
-	module.exports = Utils;
-
-
-/***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var MovingObject = __webpack_require__(2),
-	    Utils = __webpack_require__(3),
-	    Obstacle = __webpack_require__(5),
-	    Ramp = __webpack_require__(6),
-	    Yeti = __webpack_require__(7);
-	
-	var Skier = function (attr) {
-	  var pos = attr.pos;
-	  var game = attr.game;
-	  var img = attr.img;
-	  this.frameIndex = 0;
-	  this.animationDir = -1;
-	  MovingObject.call(this, {pos: pos, vel: [0, 0], game: game, img: img});
-	}
-	Utils.inherits(Skier, MovingObject);
-	
-	
-	Skier.prototype.getHitBox = function () {
-	  var pos = this.pos;
-	  return {top: pos[1] + 15, bottom: pos[1] + 30, left: pos[0] + 5, right: pos[0] + 15};
-	}
-	
-	Skier.prototype.isCollidedWith = function (otherObject) {
-	  if (this.game.god) { return false; }
-	  return Utils.overlap(this.getHitBox(), otherObject.getHitBox());
-	};
-	
-	
-	Skier.prototype.collideWith = function (otherObject) {
-	  if (otherObject instanceof Obstacle && this.game.canCrash  && !this.game.isJumping) {
-	    this.game.skiCrash();
-	  } else if (otherObject instanceof Ramp && !this.game.isJumping) {
-	    this.game.skiJump();
-	  } else if (otherObject instanceof Yeti && !this.game.isJumping) {
-	    this.game.killSkier();
-	  }
-	}
-	
-	Skier.prototype.draw = function (ctx, timeDelta) {
-	  if (!this.game.over) {
-	    if (this.game.isJumping) {
-	      this.pos[1] += (timeDelta/(1000/60))*this.animationDir*1.6;
-	      if (this.pos[1] < 200) {
-	        this.animationDir = 1;
-	      }
-	    }
-	    ctx.drawImage(this.img, this.pos[0], this.pos[1]);
-	  } else {
-	    this.startTime = this.startTime || Date.now();
-	    var time = Date.now() - this.startTime;
-	    if (time > 100) {
-	      this.frameIndex += 1;
-	      this.startTime = Date.now();
-	      if (this.frameIndex > 4) { this.frameIndex = 4; }
-	    }
-	    ctx.drawImage(this.img, this.frameIndex * 35, 0, 35, 43, this.pos[0], this.pos[1], 35, 43);
-	  }
-	}
-	
-	
-	module.exports = Skier;
-
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var MovingObject = __webpack_require__(2),
-	    Utils = __webpack_require__(3);
-	
-	var Obstacle = function (attr) {
-	  this.style = attr.style;
-	  MovingObject.call(this, attr);
-	}
-	Utils.inherits(Obstacle, MovingObject);
-	
-	Obstacle.prototype.getHitBox = function () {
-	  var pos = this.pos;
-	  if (this.style === 0) {
-	    return {top: pos[1] + 42, bottom: pos[1] + 60, left: pos[0] + 10, right: pos[0] + 25};
-	  } else if (this.style === 1) {
-	    return {top: pos[1] + 17, bottom: pos[1] + 30, left: pos[0] + 6, right: pos[0] + 18};
-	  } else if (this.style === 2) {
-	    return {top: pos[1] + 18, bottom: pos[1] + 30, left: pos[0] + 11, right: pos[0] + 19};
-	  } else {
-	    return {top: pos[1] + 5, bottom: pos[1] + 12, left: pos[0], right: pos[0] + 18};
-	  }
-	}
-	
-	
-	
-	module.exports = Obstacle;
-
-
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var MovingObject = __webpack_require__(2),
-	    Utils = __webpack_require__(3);
-	
-	var Ramp = function (attr) {
-	  MovingObject.call(this,attr);
-	}
-	
-	Utils.inherits(Ramp, MovingObject);
-	
-	Ramp.prototype.getHitBox = function () {
-	  var pos = this.pos;
-	  return {top: pos[1], bottom: pos[1] + 5, left: pos[0], right: pos[0] + 35};
-	}
-	
-	module.exports = Ramp;
-
-
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var MovingObject = __webpack_require__(2),
-	    Utils = __webpack_require__(3);
-	var Yeti = function (attrs) {
-	  this.startTime = Date.now();
-	  this.frameIndex = 0;
-	  MovingObject.call(this, attrs);
-	}
-	Utils.inherits(Yeti, MovingObject);
-	
-	Yeti.prototype.move = function (timeDelta) { // 16ms
-	  var skierPos = this.game.skier.pos;
-	  var skierDir = this.game.direction;
-	  this.vel = Utils.vector(this.pos, skierPos);
-	  if (!this.game.isJumping) {
-	    if (skierDir === 6) {
-	      this.vel = Utils.arrayAdd(this.vel, [0, -1.3]);
-	    } else if (skierDir > 3 && skierDir < 9 && skierDir !== 6) {
-	      var xOffset = (skierDir - 6)/2;
-	      var yOffset = 0 - ((skierDir % 3)/4);
-	      if (this.pos[0] > skierPos[0] && skierDir < 6 ||
-	          this.pos[0] < skierPos[0] && skierDir > 6) {
-	            xOffset -= (6-skierDir);
-	            yOffset *= 1.5;
-	      }
-	      this.vel = Utils.arrayAdd(this.vel, [xOffset, yOffset]);
-	    } else {
-	      this.vel = [this.vel[0]*3, this.vel[1]*3];
-	    }
-	  } else {
-	    this.vel = [this.vel[0], -0.5];
-	  }
-	  if (this.pos[1] < 20) {
-	    this.vel = [0, -2.5];
-	  }
-	  if (Math.abs(this.pos[0] - skierPos[0]) > 200 || Utils.distance(this.pos, skierPos > 300)) {
-	    this.vel = Utils.scale(this.vel, 4);
-	  }
-	  this.pos[0] += this.vel[0] * timeDelta / (1000/60);
-	  this.pos[1] += this.vel[1] * timeDelta / (1000/60);
-	  if (this.pos[1] < -50) {
-	    this.game.remove(this);
-	  }
-	}
-	
-	Yeti.prototype.draw = function (ctx) {
-	  var skierXpos = this.game.skier.pos[0];
-	  var right = skierXpos > this.pos[0] ? 0 : 64;
-	  var time = Date.now() - this.startTime;
-	  if (time > (300/this.game.speed)) {
-	    this.startTime = Date.now();
-	    this.frameIndex += 1;
-	    if (this.frameIndex > 1) { this.frameIndex = 0; }
-	  }
-	  ctx.drawImage(this.img, (this.frameIndex * 32) + right, 0, 32, 42, this.pos[0], this.pos[1], 32, 42);
-	}
-	
-	Yeti.prototype.getHitBox = function () {
-	  var pos = this.pos;
-	  return {top: pos[1] + 10, left: pos[0] + 10, right: pos[0] + 20, bottom: pos[1] + 35};
-	}
-	module.exports = Yeti;
-
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
 	var Ski = __webpack_require__(1);
 	
 	var SkiView = function (game, ctx) {
@@ -767,12 +521,21 @@
 	    $(e.target).addClass('selected');
 	    this.game.setMonster(mon);
 	  }.bind(this));
+	  $('.physics').on('click', function (e) {
+	    var p = parseInt(e.target.id.substring(3,4));
+	    $('.physics').children().each(function (i, el) {
+	      $(el).removeClass();
+	    });
+	    $(e.target).addClass('selected');
+	    this.game.setPhysics(p);
+	  }.bind(this));
 	}
 	
 	SkiView.prototype.unbindSettingsHandler = function () {
 	  $('.speed').off('click');
 	  $('.density').off('click');
 	  $('.monster').off('click');
+	  $('.physics').off('click');
 	  $('.options').css('display', 'none');
 	  $('.newgame').css('display', 'block');
 	  $('.newgame').on('click', function (e) {
@@ -781,7 +544,12 @@
 	    this.game.over = true;
 	    this.stopped = true;
 	    var g = this.game;
-	    var gameSettings = { speed: g.speed, density: g.density, monster: g.monster }
+	    var gameSettings = {
+	      speed: g.speed,
+	      density: g.density,
+	      monster: g.monster,
+	      physics: g.physics
+	    }
 	    cancelAnimationFrame(this.animation);
 	    this.game.stopObjectInterval();
 	    delete this.game;
@@ -796,7 +564,7 @@
 
 
 /***/ },
-/* 9 */
+/* 3 */
 /***/ function(module, exports) {
 
 	var Loading = function (ctx) {
@@ -845,6 +613,280 @@
 	}
 	
 	module.exports = Loading;
+
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Utils = __webpack_require__(5);
+	
+	var MovingObject = function (attr) {
+	  this.pos = attr.pos;
+	  this.vel = attr.vel;
+	  this.game = attr.game;
+	  this.img = attr.img;
+	}
+	
+	MovingObject.prototype.move = function (timeDelta) {
+	  if (!this.vel) { debugger; }
+	  this.pos[0] += this.vel[0] * timeDelta / (1000/60);
+	  this.pos[1] += this.vel[1] * timeDelta / (1000/60);
+	  if (this.pos[1] < -50) {
+	    this.game.remove(this);
+	  }
+	}
+	
+	MovingObject.prototype.shift = function (n) {
+	  this.pos[0] += n;
+	}
+	
+	MovingObject.prototype.draw = function (ctx) {
+	  ctx.drawImage(this.img, this.pos[0], this.pos[1]);
+	}
+	
+	
+	module.exports = MovingObject;
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
+
+	var Utils = {};
+	
+	Utils.inherits = function (subclass, parentClass) {
+	  var Surrogate = function () {};
+	  Surrogate.prototype = parentClass.prototype;
+	  subclass.prototype = new Surrogate();
+	  subclass.prototype.constructor = subclass;
+	}
+	
+	Utils.arrayEquals = function (arr1, arr2) {
+	  if (!arr1 || !arr2) {
+	    return false;
+	  }
+	  return arr1[0] === arr2[0] && arr1[1] === arr2[1];
+	}
+	
+	Utils.arrayAdd = function (arr1, arr2) {
+	  return [arr1[0] + arr2[0], arr1[1] + arr2[1]];
+	}
+	
+	Utils.overlap = function (r1, r2) {
+	  return !(r2.left > r1.right ||
+	           r2.right < r1.left ||
+	           r2.top > r1.bottom ||
+	           r2.bottom < r1.top);
+	}
+	
+	Utils.vector = function (pos1, pos2) {
+	  var vec_x = pos2[0] - pos1[0];
+	  var vec_y = pos2[1] - pos1[1];
+	  var normal = Math.abs(vec_x) > Math.abs(vec_y) ? Math.abs(vec_x) : Math.abs(vec_y);
+	  return [vec_x/normal, vec_y/normal];
+	}
+	
+	Utils.scale = function (vector, scaleF) {
+	  return [vector[0] * scaleF, vector[1] * scaleF];
+	}
+	
+	Utils.distance = function (pos1, pos2) {
+	  var dx = pos1[0] - pos2[0];
+	  var dy = pos1[1] - pos2[1];
+	  return Math.sqrt(dx * dx + dy * dy);
+	}
+	
+	
+	
+	window.Utils = Utils;
+	module.exports = Utils;
+
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var MovingObject = __webpack_require__(4),
+	    Utils = __webpack_require__(5),
+	    Obstacle = __webpack_require__(7),
+	    Ramp = __webpack_require__(8),
+	    Yeti = __webpack_require__(9);
+	
+	var Skier = function (attr) {
+	  var pos = attr.pos;
+	  var game = attr.game;
+	  var img = attr.img;
+	  this.frameIndex = 0;
+	  this.animationDir = -1;
+	  MovingObject.call(this, {pos: pos, vel: [0, 0], game: game, img: img});
+	}
+	Utils.inherits(Skier, MovingObject);
+	
+	
+	Skier.prototype.getHitBox = function () {
+	  var pos = this.pos;
+	  return {top: pos[1] + 15, bottom: pos[1] + 30, left: pos[0] + 5, right: pos[0] + 15};
+	}
+	
+	Skier.prototype.isCollidedWith = function (otherObject) {
+	  if (this.game.god) { return false; }
+	  return Utils.overlap(this.getHitBox(), otherObject.getHitBox());
+	};
+	
+	
+	Skier.prototype.collideWith = function (otherObject) {
+	  if (otherObject instanceof Obstacle && this.game.canCrash  && !this.game.isJumping) {
+	    this.game.skiCrash();
+	  } else if (otherObject instanceof Ramp && !this.game.isJumping) {
+	    this.game.skiJump();
+	  } else if (otherObject instanceof Yeti && !this.game.isJumping) {
+	    this.game.killSkier();
+	  }
+	}
+	
+	Skier.prototype.draw = function (ctx, timeDelta) {
+	  if (!this.game.over) {
+	    if (this.game.isJumping) {
+	      this.pos[1] += (timeDelta/(1000/60))*this.animationDir*1.6;
+	      if (this.pos[1] < 200) {
+	        this.animationDir = 1;
+	      }
+	    }
+	    ctx.drawImage(this.img, this.pos[0], this.pos[1]);
+	  } else {
+	    this.startTime = this.startTime || Date.now();
+	    var time = Date.now() - this.startTime;
+	    if (time > 100) {
+	      this.frameIndex += 1;
+	      this.startTime = Date.now();
+	      if (this.frameIndex > 4) { this.frameIndex = 4; }
+	    }
+	    ctx.drawImage(this.img, this.frameIndex * 35, 0, 35, 43, this.pos[0], this.pos[1], 35, 43);
+	  }
+	}
+	
+	
+	module.exports = Skier;
+
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var MovingObject = __webpack_require__(4),
+	    Utils = __webpack_require__(5);
+	
+	var Obstacle = function (attr) {
+	  this.style = attr.style;
+	  MovingObject.call(this, attr);
+	}
+	Utils.inherits(Obstacle, MovingObject);
+	
+	Obstacle.prototype.getHitBox = function () {
+	  var pos = this.pos;
+	  if (this.style === 0) {
+	    return {top: pos[1] + 42, bottom: pos[1] + 60, left: pos[0] + 10, right: pos[0] + 25};
+	  } else if (this.style === 1) {
+	    return {top: pos[1] + 17, bottom: pos[1] + 30, left: pos[0] + 6, right: pos[0] + 18};
+	  } else if (this.style === 2) {
+	    return {top: pos[1] + 18, bottom: pos[1] + 30, left: pos[0] + 11, right: pos[0] + 19};
+	  } else {
+	    return {top: pos[1] + 5, bottom: pos[1] + 12, left: pos[0], right: pos[0] + 18};
+	  }
+	}
+	
+	
+	
+	module.exports = Obstacle;
+
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var MovingObject = __webpack_require__(4),
+	    Utils = __webpack_require__(5);
+	
+	var Ramp = function (attr) {
+	  MovingObject.call(this,attr);
+	}
+	
+	Utils.inherits(Ramp, MovingObject);
+	
+	Ramp.prototype.getHitBox = function () {
+	  var pos = this.pos;
+	  return {top: pos[1], bottom: pos[1] + 5, left: pos[0], right: pos[0] + 35};
+	}
+	
+	module.exports = Ramp;
+
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var MovingObject = __webpack_require__(4),
+	    Utils = __webpack_require__(5);
+	var Yeti = function (attrs) {
+	  this.startTime = Date.now();
+	  this.frameIndex = 0;
+	  MovingObject.call(this, attrs);
+	}
+	Utils.inherits(Yeti, MovingObject);
+	
+	Yeti.prototype.move = function (timeDelta) { // 16ms
+	  var skierPos = this.game.skier.pos;
+	  var skierDir = this.game.direction;
+	  this.vel = Utils.vector(this.pos, skierPos);
+	  if (!this.game.isJumping) {
+	    if (skierDir === 6) {
+	      this.vel = Utils.arrayAdd(this.vel, [0, -1.3]);
+	    } else if (skierDir > 3 && skierDir < 9 && skierDir !== 6) {
+	      var xOffset = (skierDir - 6)/2;
+	      var yOffset = 0 - ((skierDir % 3)/4);
+	      if (this.pos[0] > skierPos[0] && skierDir < 6 ||
+	          this.pos[0] < skierPos[0] && skierDir > 6) {
+	            xOffset -= (6-skierDir);
+	            yOffset *= 1.5;
+	      }
+	      this.vel = Utils.arrayAdd(this.vel, [xOffset, yOffset]);
+	    } else {
+	      this.vel = [this.vel[0]*3, this.vel[1]*3];
+	    }
+	  } else {
+	    this.vel = [this.vel[0], -0.5];
+	  }
+	  if (this.pos[1] < 20) {
+	    this.vel = [0, -2.5];
+	  }
+	  if (Math.abs(this.pos[0] - skierPos[0]) > 200 || Utils.distance(this.pos, skierPos > 300)) {
+	    this.vel = Utils.scale(this.vel, 4);
+	  }
+	  this.pos[0] += this.vel[0] * timeDelta / (1000/60);
+	  this.pos[1] += this.vel[1] * timeDelta / (1000/60);
+	  if (this.pos[1] < -50) {
+	    this.game.remove(this);
+	  }
+	}
+	
+	Yeti.prototype.draw = function (ctx) {
+	  var skierXpos = this.game.skier.pos[0];
+	  var right = skierXpos > this.pos[0] ? 0 : 64;
+	  var time = Date.now() - this.startTime;
+	  if (time > (300/this.game.speed)) {
+	    this.startTime = Date.now();
+	    this.frameIndex += 1;
+	    if (this.frameIndex > 1) { this.frameIndex = 0; }
+	  }
+	  ctx.drawImage(this.img, (this.frameIndex * 32) + right, 0, 32, 42, this.pos[0], this.pos[1], 32, 42);
+	}
+	
+	Yeti.prototype.getHitBox = function () {
+	  var pos = this.pos;
+	  return {top: pos[1] + 10, left: pos[0] + 10, right: pos[0] + 20, bottom: pos[1] + 35};
+	}
+	module.exports = Yeti;
 
 
 /***/ }

@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var ctx = canvas.getContext("2d");
   canvas.height = 600;
   canvas.width = 800;
-  var gameSettings = {speed: 1, density: 2, monster: true}
+  var gameSettings = {speed: 1, density: 2, monster: true, physics: true}
   var game = new Ski(gameSettings);
   window.ski = game;
   var view = new SkiView(game, ctx);

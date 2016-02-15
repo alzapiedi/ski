@@ -71,12 +71,21 @@ SkiView.prototype.bindSettingsHandler = function () {
     $(e.target).addClass('selected');
     this.game.setMonster(mon);
   }.bind(this));
+  $('.physics').on('click', function (e) {
+    var p = parseInt(e.target.id.substring(3,4));
+    $('.physics').children().each(function (i, el) {
+      $(el).removeClass();
+    });
+    $(e.target).addClass('selected');
+    this.game.setPhysics(p);
+  }.bind(this));
 }
 
 SkiView.prototype.unbindSettingsHandler = function () {
   $('.speed').off('click');
   $('.density').off('click');
   $('.monster').off('click');
+  $('.physics').off('click');
   $('.options').css('display', 'none');
   $('.newgame').css('display', 'block');
   $('.newgame').on('click', function (e) {
@@ -85,7 +94,12 @@ SkiView.prototype.unbindSettingsHandler = function () {
     this.game.over = true;
     this.stopped = true;
     var g = this.game;
-    var gameSettings = { speed: g.speed, density: g.density, monster: g.monster }
+    var gameSettings = {
+      speed: g.speed,
+      density: g.density,
+      monster: g.monster,
+      physics: g.physics
+    }
     cancelAnimationFrame(this.animation);
     this.game.stopObjectInterval();
     delete this.game;
