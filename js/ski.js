@@ -5,7 +5,7 @@ var MovingObject = require('./movingObject'),
     Ramp = require('./ramp'),
     Yeti = require('./yeti');
 
-var Ski = function () {
+var Ski = function (attr) {
   this.loadImages();
   this.obstacles = [];
   this.god = false;
@@ -13,13 +13,13 @@ var Ski = function () {
   this.crashed = false;
   this.canCrash = true;
   this.direction = 3;
-  this.speed = 1;
-  this.density = 1;
+  this.speed = attr.speed;
+  this.density = attr.density;
   this.isJumping = false;
   this.timerStart = Date.now();
   this.distance = 0;
   this.over = false;
-  this.monster = true;
+  this.monster = attr.monster;
   // skiImg.onload = function () {
   this.skier = new Skier({pos: [400, 300], game: this, img: this.skierImgs[3]});
   // }.bind(this);
@@ -70,8 +70,11 @@ Ski.prototype.remove = function (object) {
   if(object instanceof Obstacle){
     var i = this.obstacles.indexOf(object);
     this.obstacles.splice(i, 1);
-  } else if (false) {
-
+  } else if (object instanceof Ramp) {
+    var i = this.ramps.indexOf(object);
+    this.ramps.splice(i, 1);
+  } else if (object instanceof Yeti) {
+    delete this.yeti;
   }
 };
 
@@ -91,11 +94,6 @@ Ski.prototype.getTimer = function () {
   }
   return this.timerNow;
 }
-
-Ski.prototype.killSkier = function () {
-
-}
-
 
 Ski.prototype.loadImages = function () {
   var ski3 = new Image();
@@ -176,7 +174,7 @@ Ski.prototype.draw = function (ctx, timeDelta) {
   this.allObjects().forEach(function (obj) {
     obj.draw(ctx);
   });
-  if (this.isJumping) { this.skier.draw(ctx, timeDelta); }
+  if (this.isJumping || this.over) { this.skier.draw(ctx, timeDelta); }
   ctx.drawImage(this.banner, 0, 0);
   ctx.fillText(timer + " / " + distance,680,55);
 }
@@ -193,14 +191,6 @@ Ski.prototype.shiftObjects = function (n) {
   });
 }
 
-Ski.prototype.enableGodMode = function () {
-  this.god = true;
-}
-
-Ski.prototype.disableGodMode = function () {
-  this.god = false;
-}
-
 Ski.prototype.setMonster = function (mon) {
   this.monster = !!mon;
 }
@@ -209,7 +199,7 @@ Ski.prototype.step = function (timeDelta) {
   if (!this.over) {
     var vel = this.vels()[this.direction];
     this.distance -= vel[1] / 13;
-    if (this.distance > 1000 && !this.yeti && this.monster) {   // MAKE 2500
+    if (this.distance > 750 && !this.yeti && this.monster) {   // MAKE 2500
       var r = Math.floor(Math.random() * 1000);
       if (r === 666) {
         this.bringOutTheYeti();
@@ -221,8 +211,10 @@ Ski.prototype.step = function (timeDelta) {
 }
 
 Ski.prototype.bringOutTheYeti = function () {
-  var vel = this.vels()[this.direction];
-  this.yeti = new Yeti({pos: [0, 200], vel: vel, game: this, img: this.yetiImg});
+  var vel = [0,0];
+  var randX = Math.floor(Math.random() * 2) === 0 ? -40 : 800;
+  var randY = (Math.random() * 400) + 200;
+  this.yeti = new Yeti({pos: [randX, randY], vel: vel, game: this, img: this.yetiImg});
 }
 
 Ski.prototype.checkCollisions = function () {
@@ -304,10 +296,12 @@ Ski.prototype.skiCrash = function () {
     obj.vel = [0, 0];
   });
   setTimeout(function () {
-    this.crashed = false;
-    this.skier.img = this.skierImgs[this.direction];
-    this.updateVelocities();
-    this.startObjectInterval();
+    if (!this.over) {
+      this.crashed = false;
+      this.skier.img = this.skierImgs[this.direction];
+      this.updateVelocities();
+      this.startObjectInterval();
+    }
   }.bind(this), 1000);
 }
 

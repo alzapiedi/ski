@@ -84,10 +84,12 @@ SkiView.prototype.unbindSettingsHandler = function () {
     this.unbindKeyHandlers();
     this.game.over = true;
     this.stopped = true;
+    var g = this.game;
+    var gameSettings = { speed: g.speed, density: g.density, monster: g.monster }
     cancelAnimationFrame(this.animation);
     this.game.stopObjectInterval();
     delete this.game;
-    this.game = new Ski();
+    this.game = new Ski(gameSettings);
     $('.newgame').css('display', 'none');
     $('.options').css('display', 'block');
     this.start();

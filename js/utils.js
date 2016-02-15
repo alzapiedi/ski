@@ -28,7 +28,8 @@ Utils.overlap = function (r1, r2) {
 Utils.vector = function (pos1, pos2) {
   var vec_x = pos2[0] - pos1[0];
   var vec_y = pos2[1] - pos1[1];
-  return [vec_x/Math.abs(vec_x), vec_y/Math.abs(vec_x)];
+  var normal = Math.abs(vec_x) > Math.abs(vec_y) ? Math.abs(vec_x) : Math.abs(vec_y);
+  return [vec_x/normal, vec_y/normal];
 }
 
 
