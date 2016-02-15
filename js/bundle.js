@@ -297,10 +297,14 @@
 	
 	Ski.prototype.addObject = function () {
 	  var i = Math.floor(Math.random() * 10);
+	  var randomPos = this.randomPosition();
+	  while (this.overlappingObject(randomPos)) {
+	    randomPos = this.randomPosition();
+	  }
 	  if (i > 1) {
 	    var j = Math.floor(Math.random() * 4);
 	    var obstacle = new Obstacle({
-	      pos: this.randomPosition(),
+	      pos: randomPos,
 	      vel: this.vels()[this.direction],
 	      game: this,
 	      img: this.obstacleImgs[j],
@@ -309,13 +313,24 @@
 	    this.obstacles.push(obstacle);
 	  } else {
 	    var ramp = new Ramp({
-	      pos: this.randomPosition(),
+	      pos: randomPos,
 	      vel: this.vels()[this.direction],
 	      game: this,
 	      img: this.rampImg
 	    });
 	    this.ramps.push(ramp);
 	  }
+	}
+	
+	Ski.prototype.overlappingObject = function (testPosition) {
+	  var testHitbox = { top: testPosition[1], left: testPosition[0], right: testPosition[0] + 20, bottom: testPosition[1] + 50};
+	  var test = false;
+	  var hitbox;
+	  this.allObjects().forEach(function (obj) {
+	    hitbox = obj.getHitBox();
+	    if (Utils.overlap(hitbox, testHitbox)) { test = true; }
+	  });
+	  return test;
 	}
 	
 	Ski.prototype.updateVelocities = function () {
