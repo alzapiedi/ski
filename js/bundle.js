@@ -323,7 +323,7 @@
 	}
 	
 	Ski.prototype.overlappingObject = function (testPosition) {
-	  var testHitbox = { top: testPosition[1] - 10, left: testPosition[0] - 10, right: testPosition[0] + 20, bottom: testPosition[1] + 50};
+	  var testHitbox = { top: testPosition[1] - 20, left: testPosition[0] - 20, right: testPosition[0] + 40, bottom: testPosition[1] + 60};
 	  var test = false;
 	  var hitbox;
 	  this.allObjects().forEach(function (obj) {
@@ -617,7 +617,7 @@
 	
 	Ramp.prototype.getHitBox = function () {
 	  var pos = this.pos;
-	  return {top: pos[1], bottom: pos[1] + 5, left: pos[0], right: pos[0] + 30};
+	  return {top: pos[1], bottom: pos[1] + 5, left: pos[0], right: pos[0] + 35};
 	}
 	
 	module.exports = Ramp;
