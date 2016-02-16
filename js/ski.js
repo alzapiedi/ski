@@ -201,7 +201,6 @@ Ski.prototype.setMonster = function (mon) {
 }
 
 Ski.prototype.step = function (timeDelta) {
-  console.log(this.timerNow);
   if (!this.over) {
     var vel = this.vels()[this.direction];
     this.distance -= vel[1] / 13;
