@@ -296,10 +296,11 @@ Ski.prototype.updateCurrentVelocity = function () {
       return;
     }
     var f = 20/this.speed;
-    if (v[0] > target[0]) { this.velocity[0] -= (v[0]-target[0])/f; }
-    else if (v[0] < target[0]) { this.velocity[0] += (target[0]-v[0])/f; }
-    if (v[1] > target[1]) { this.velocity[1] -= (v[1]-target[1])/f; }
-    else if (v[1] < target[1]) { this.velocity[1] += (target[1]-v[1])/f; }
+    if (v[0] > target[0]) { this.velocity[0] -= (v[0]-target[0])/(f/2); }
+    else if (v[0] < target[0]) { this.velocity[0] += (target[0]-v[0])/(f/2); }
+    if (v[1] > target[1]) { this.velocity[1] -= (v[1]-target[1])/(f*2); }
+    else if (v[1] < target[1]) { this.velocity[1] += (target[1]-v[1])/(f*2); }
+    if (target[1] === 0) { this.velocity[1] = 0; }
 }
 
 Ski.prototype.changeDirection = function (keyCode) {  //37 left   39 right
