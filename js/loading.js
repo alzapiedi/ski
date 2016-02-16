@@ -3,6 +3,8 @@ var Loading = function (ctx) {
   this.loadImages();
 }
 
+// Windows 95 intro animation
+
 Loading.prototype.animate = function (callback) {
   this.img1.onload = function () {
     this.ctx.drawImage(this.img1,0,0,800,600);
@@ -28,12 +30,12 @@ Loading.prototype.loadImages = function () {
 }
 
 Loading.prototype.mouseMove = function () {
-  // 150, 335
+  // 150, 335 Target mouse location
   var c_x = 300;
   var c_y = 400;
   var interval = setInterval(function () {
-    c_x -= 4.6;
-    c_y -= 2;
+    c_x -= 6.9;
+    c_y -= 3;
     this.ctx.drawImage(this.img2,0,0,800,600);
     this.ctx.drawImage(this.img3,c_x,c_y);
     if (c_y < 335) {

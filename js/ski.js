@@ -7,52 +7,49 @@ var MovingObject = require('./movingObject'),
 
 var Ski = function (attr) {
   this.loadImages();
-  this.obstacles = [];
-  this.god = false;
-  this.ramps = [];
-  this.crashed = false;
-  this.canCrash = true;
-  this.direction = 3;
   this.speed = attr.speed;
   this.density = attr.density;
-  this.isJumping = false;
-  this.timerStart = Date.now();
-  this.distance = 0;
+  this.monster = attr.monster;
+  this.physics = attr.physics;
+  this.friction = 15;
+  this.obstacles = [];
+  this.ramps = [];
+  this.direction = 3;               // direction = clock position ( 3 right, 6 down, 9 left)
+  this.god = false;
   this.over = false;
+  this.isJumping = false;
+  this.crashed = false;
+  this.canCrash = true;
+  this.distance = 0;
+  this.timerStart = Date.now();
   this.objectId = 1;
   this.velocity = [0, 0];
-  this.physics = attr.physics;
-  this.monster = attr.monster;
-  // skiImg.onload = function () {
   this.skier = new Skier({pos: [400, 300], game: this, img: this.skierImgs[3]});
-  // }.bind(this);
   this.seedObjects();
-  this.startObjectInterval();
 }
 
 Ski.prototype.setSpeed = function (s) {
-  this.stopObjectInterval();
   this.speed = s;
-  this.updateVelocities();
-  this.startObjectInterval();
 }
 
 Ski.prototype.setDensity = function (d) {
-  this.stopObjectInterval();
   this.density = d;
-  this.startObjectInterval()
 }
 
 Ski.prototype.setPhysics = function (p) {
-  p ? this.physics = true : this.physics = false;
+  this.physics = p ? true : false;
+}
+
+Ski.prototype.setFriction = function (f) {
+  this.friction = f;
 }
 
 Ski.prototype.seedObjects = function () {
   for (var i = 0; i < 10; i++) {
     this.addObject();
   }
-  this.allObjects().forEach(function (obj) {
-    var r = Math.random() * 200 + 100;
+  this.allObjects().forEach(function (obj) {  // object random position adjusted according
+    var r = Math.random() * 200 + 100;        // to direction, this normalizes it for beginning of game
     obj.pos[1] -= r;
     obj.pos[0] -= 600;
   });
@@ -86,9 +83,7 @@ Ski.prototype.remove = function (object) {
 };
 
 Ski.prototype.isMoving = function () {
-  var moving = this.direction > 3 && this.direction < 9;
-  if (!moving) { this.restartTimer(); }
-  return moving;
+  return this.direction > 3 && this.direction < 9;
 }
 
 Ski.prototype.restartTimer = function () {
@@ -98,11 +93,14 @@ Ski.prototype.restartTimer = function () {
 Ski.prototype.getTimer = function () {
   if (this.isMoving()) {
     this.timerNow = Math.floor((Date.now() - this.timerStart)/1000) + "s";
+  } else {
+    this.restartTimer();
   }
   return this.timerNow;
 }
 
 Ski.prototype.loadImages = function () {
+  // there has to be a better way to do this
   var ski3 = new Image();
   var ski4 = new Image();
   var ski5 = new Image();
@@ -203,6 +201,7 @@ Ski.prototype.setMonster = function (mon) {
 }
 
 Ski.prototype.step = function (timeDelta) {
+  console.log(this.timerNow);
   if (!this.over) {
     var vel = this.vels()[this.direction];
     this.distance -= vel[1] / 13;
@@ -295,12 +294,14 @@ Ski.prototype.updateCurrentVelocity = function () {
       this.velocity = [0, 0];
       return;
     }
-    var f = 20/this.speed;
-    if (v[0] > target[0]) { this.velocity[0] -= (v[0]-target[0])/(f/2); }
-    else if (v[0] < target[0]) { this.velocity[0] += (target[0]-v[0])/(f/2); }
+    var f = this.friction;
+    if (target[0] === 0) { f /= 2; }
+    if (v[0] > target[0]) { this.velocity[0] -= (v[0]-target[0])/(f); }
+    else if (v[0] < target[0]) { this.velocity[0] += (target[0]-v[0])/(f); }
     if (v[1] > target[1]) { this.velocity[1] -= (v[1]-target[1])/(f*2); }
     else if (v[1] < target[1]) { this.velocity[1] += (target[1]-v[1])/(f*2); }
     if (target[1] === 0) { this.velocity[1] = 0; }
+    if (this.isJumping) { this.velocity = target; }
 }
 
 Ski.prototype.changeDirection = function (keyCode) {  //37 left   39 right

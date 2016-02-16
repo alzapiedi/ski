@@ -53,13 +53,13 @@
 	  var ctx = canvas.getContext("2d");
 	  canvas.height = 600;
 	  canvas.width = 800;
-	  var gameSettings = {speed: 1, density: 2, monster: true, physics: true}
+	  var gameSettings = {speed: 1, density: 2, monster: true, physics: true} // Four game settings
 	  var game = new Ski(gameSettings);
 	  window.ski = game;
 	  var view = new SkiView(game, ctx);
-	  var load = new Loading(ctx);
-	  load.animate(view.start.bind(view));
-	  // view.start();
+	  // var load = new Loading(ctx);
+	  // load.animate(view.start.bind(view));
+	  view.start();
 	});
 
 
@@ -76,52 +76,49 @@
 	
 	var Ski = function (attr) {
 	  this.loadImages();
-	  this.obstacles = [];
-	  this.god = false;
-	  this.ramps = [];
-	  this.crashed = false;
-	  this.canCrash = true;
-	  this.direction = 3;
 	  this.speed = attr.speed;
 	  this.density = attr.density;
-	  this.isJumping = false;
-	  this.timerStart = Date.now();
-	  this.distance = 0;
+	  this.monster = attr.monster;
+	  this.physics = attr.physics;
+	  this.friction = 15;
+	  this.obstacles = [];
+	  this.ramps = [];
+	  this.direction = 3;               // direction = clock position ( 3 right, 6 down, 9 left)
+	  this.god = false;
 	  this.over = false;
+	  this.isJumping = false;
+	  this.crashed = false;
+	  this.canCrash = true;
+	  this.distance = 0;
+	  this.timerStart = Date.now();
 	  this.objectId = 1;
 	  this.velocity = [0, 0];
-	  this.physics = attr.physics;
-	  this.monster = attr.monster;
-	  // skiImg.onload = function () {
 	  this.skier = new Skier({pos: [400, 300], game: this, img: this.skierImgs[3]});
-	  // }.bind(this);
 	  this.seedObjects();
-	  this.startObjectInterval();
 	}
 	
 	Ski.prototype.setSpeed = function (s) {
-	  this.stopObjectInterval();
 	  this.speed = s;
-	  this.updateVelocities();
-	  this.startObjectInterval();
 	}
 	
 	Ski.prototype.setDensity = function (d) {
-	  this.stopObjectInterval();
 	  this.density = d;
-	  this.startObjectInterval()
 	}
 	
 	Ski.prototype.setPhysics = function (p) {
-	  p ? this.physics = true : this.physics = false;
+	  this.physics = p ? true : false;
+	}
+	
+	Ski.prototype.setFriction = function (f) {
+	  this.friction = f;
 	}
 	
 	Ski.prototype.seedObjects = function () {
 	  for (var i = 0; i < 10; i++) {
 	    this.addObject();
 	  }
-	  this.allObjects().forEach(function (obj) {
-	    var r = Math.random() * 200 + 100;
+	  this.allObjects().forEach(function (obj) {  // object random position adjusted according
+	    var r = Math.random() * 200 + 100;        // to direction, this normalizes it for beginning of game
 	    obj.pos[1] -= r;
 	    obj.pos[0] -= 600;
 	  });
@@ -155,9 +152,7 @@
 	};
 	
 	Ski.prototype.isMoving = function () {
-	  var moving = this.direction > 3 && this.direction < 9;
-	  if (!moving) { this.restartTimer(); }
-	  return moving;
+	  return this.direction > 3 && this.direction < 9;
 	}
 	
 	Ski.prototype.restartTimer = function () {
@@ -167,11 +162,14 @@
 	Ski.prototype.getTimer = function () {
 	  if (this.isMoving()) {
 	    this.timerNow = Math.floor((Date.now() - this.timerStart)/1000) + "s";
+	  } else {
+	    this.restartTimer();
 	  }
 	  return this.timerNow;
 	}
 	
 	Ski.prototype.loadImages = function () {
+	  // there has to be a better way to do this
 	  var ski3 = new Image();
 	  var ski4 = new Image();
 	  var ski5 = new Image();
@@ -272,6 +270,7 @@
 	}
 	
 	Ski.prototype.step = function (timeDelta) {
+	  console.log(this.timerNow);
 	  if (!this.over) {
 	    var vel = this.vels()[this.direction];
 	    this.distance -= vel[1] / 13;
@@ -364,12 +363,14 @@
 	      this.velocity = [0, 0];
 	      return;
 	    }
-	    var f = 20/this.speed;
-	    if (v[0] > target[0]) { this.velocity[0] -= (v[0]-target[0])/(f/2); }
-	    else if (v[0] < target[0]) { this.velocity[0] += (target[0]-v[0])/(f/2); }
+	    var f = this.friction;
+	    if (target[0] === 0) { f /= 2; }
+	    if (v[0] > target[0]) { this.velocity[0] -= (v[0]-target[0])/(f); }
+	    else if (v[0] < target[0]) { this.velocity[0] += (target[0]-v[0])/(f); }
 	    if (v[1] > target[1]) { this.velocity[1] -= (v[1]-target[1])/(f*2); }
 	    else if (v[1] < target[1]) { this.velocity[1] += (target[1]-v[1])/(f*2); }
 	    if (target[1] === 0) { this.velocity[1] = 0; }
+	    if (this.isJumping) { this.velocity = target; }
 	}
 	
 	Ski.prototype.changeDirection = function (keyCode) {  //37 left   39 right
@@ -463,7 +464,6 @@
 	}
 	
 	MovingObject.prototype.move = function (timeDelta) {
-	  if (!this.vel) { debugger; }
 	  this.pos[0] += this.vel[0] * timeDelta / (1000/60);
 	  this.pos[1] += this.vel[1] * timeDelta / (1000/60);
 	  if (this.pos[1] < -50) {
@@ -621,6 +621,11 @@
 	Utils.inherits(Obstacle, MovingObject);
 	
 	Obstacle.prototype.getHitBox = function () {
+	  // Four styles of obstacle
+	  // 0 - Tall tree
+	  // 1 - small gree tree
+	  // 2 - brown tree
+	  // 3 - rock
 	  var pos = this.pos;
 	  if (this.style === 0) {
 	    return {top: pos[1] + 42, bottom: pos[1] + 60, left: pos[0] + 10, right: pos[0] + 25};
@@ -735,6 +740,7 @@
 	var SkiView = function (game, ctx) {
 	  this.game = game;
 	  this.ctx = ctx;
+	  this.settingsActive = true;
 	  this.stopped = false;
 	}
 	
@@ -765,7 +771,7 @@
 	    key = e.keyCode;
 	    if (key > 36 && key < 41) {
 	      e.preventDefault();
-	      this.unbindSettingsHandler();
+	      this.settingsActive && this.unbindSettingsHandler();  // added settingsActive so this is only called when the game states
 	      $('.welcome').css('display','none');
 	      this.game.changeDirection(e.keyCode);
 	    }
@@ -778,7 +784,9 @@
 	}
 	
 	SkiView.prototype.bindSettingsHandler = function () {
+	  this.settingsActive = true;
 	  $('.options').css('display', 'block');
+	  // jQuery click handler -- Speed setting
 	  $('.speed').on('click', function (e) {
 	    var s = parseInt(e.target.id.substring(5,6));
 	    $('.speed').children().each(function (i, el) {
@@ -787,6 +795,8 @@
 	    $(e.target).addClass('selected');
 	    this.game.setSpeed(s);
 	  }.bind(this));
+	
+	  // jQuery click handler -- Obj Density setting
 	  $('.density').on('click', function (e) {
 	    var d = parseInt(e.target.id.substring(3,4));
 	    $('.density').children().each(function (i, el) {
@@ -795,6 +805,8 @@
 	    $(e.target).addClass('selected');
 	    this.game.setDensity(d);
 	  }.bind(this));
+	
+	  // jQuery click handler -- SnowMonster setting
 	  $('.monster').on('click', function (e) {
 	    var mon = parseInt(e.target.id.substring(3,4));
 	    $('.monster').children().each(function (i, el) {
@@ -803,23 +815,44 @@
 	    $(e.target).addClass('selected');
 	    this.game.setMonster(mon);
 	  }.bind(this));
+	
+	  // jQuery click handler -- Physics setting
 	  $('.physics').on('click', function (e) {
-	    var p = parseInt(e.target.id.substring(3,4));
+	    var p = parseInt(e.target.id.substring(4,5));
 	    $('.physics').children().each(function (i, el) {
 	      $(el).removeClass();
 	    });
 	    $(e.target).addClass('selected');
 	    this.game.setPhysics(p);
+	    var s = p ? "enable" : "disable";
+	    $('#slider').slider(s);
 	  }.bind(this));
+	
+	  //jQuery UI slider to control friction
+	    $('#slider').slider({
+	    min: -50,
+	    max: -1,
+	    value: -15
+	  });
+	  $('#slider').on('slidechange', function (event, ui) {
+	    this.game.setFriction(Math.abs(ui.value));
+	  }.bind(this));
+	
 	}
 	
 	SkiView.prototype.unbindSettingsHandler = function () {
+	  this.settingsActive = false;
+	  // Prevent alteration of settings during play
 	  $('.speed').off('click');
 	  $('.density').off('click');
 	  $('.monster').off('click');
 	  $('.physics').off('click');
+	  $('#slider').off('slidechange');     // Seems like both of these need to be called to
+	  $('#slider').slider('destroy');      // fully eliminate the event handler.
 	  $('.options').css('display', 'none');
 	  $('.newgame').css('display', 'block');
+	
+	  // new click handler for restart button
 	  $('.newgame').on('click', function (e) {
 	    e.preventDefault();
 	    this.unbindKeyHandlers();
@@ -837,7 +870,7 @@
 	    delete this.game;
 	    this.game = new Ski(gameSettings);
 	    $('.newgame').css('display', 'none');
-	    $('.options').css('display', 'block');
+	    $('.options').css('display', 'block');  // new game is loaded, show settings menu again
 	    this.start();
 	  }.bind(this));
 	
@@ -853,6 +886,8 @@
 	  this.ctx = ctx;
 	  this.loadImages();
 	}
+	
+	// Windows 95 intro animation
 	
 	Loading.prototype.animate = function (callback) {
 	  this.img1.onload = function () {
@@ -879,12 +914,12 @@
 	}
 	
 	Loading.prototype.mouseMove = function () {
-	  // 150, 335
+	  // 150, 335 Target mouse location
 	  var c_x = 300;
 	  var c_y = 400;
 	  var interval = setInterval(function () {
-	    c_x -= 4.6;
-	    c_y -= 2;
+	    c_x -= 6.9;
+	    c_y -= 3;
 	    this.ctx.drawImage(this.img2,0,0,800,600);
 	    this.ctx.drawImage(this.img3,c_x,c_y);
 	    if (c_y < 335) {

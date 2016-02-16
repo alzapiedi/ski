@@ -9,6 +9,11 @@ var Obstacle = function (attr) {
 Utils.inherits(Obstacle, MovingObject);
 
 Obstacle.prototype.getHitBox = function () {
+  // Four styles of obstacle
+  // 0 - Tall tree
+  // 1 - small gree tree
+  // 2 - brown tree
+  // 3 - rock
   var pos = this.pos;
   if (this.style === 0) {
     return {top: pos[1] + 42, bottom: pos[1] + 60, left: pos[0] + 10, right: pos[0] + 25};
