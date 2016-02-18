@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var game = new Ski(gameSettings);
   window.ski = game;
   var view = new SkiView(game, ctx);
-  // var load = new Loading(ctx);
-  // load.animate(view.start.bind(view));
-  view.start();
+  var load = new Loading(ctx);
+  load.animate(view.start.bind(view));
+  // view.start();
 });

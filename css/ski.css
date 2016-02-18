@@ -61,11 +61,58 @@ li:hover {
 
 .welcome {
   position: absolute;
-  top: 120px;
+  top: 160px;
   left: 200px;
   display: none;
   font-family: Helvetica;
 }
+
+.header {
+  display: none;
+  background: #ccc;
+}
+
+.header-links {
+  display: block;
+  width: 500px;
+  margin: auto;
+}
+
+.group:after {
+  clear:both;
+  display:block;
+  content:"";
+}
+
+.link {
+  float: left;
+  width: 160px;
+  text-align: center;
+  font-family: Helvetica;
+  padding: 0;
+}
+
+.left {
+  text-align: left;
+}
+
+.right {
+  text-align: right;
+}
+
+.port-link {
+  padding: 24px 0;
+  display: block;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.group:after {
+  content: "";
+  clear: both;
+  display: block;
+}
+
 
 #speed1, #obj3, #mon0, #phys0 {
   color: red;

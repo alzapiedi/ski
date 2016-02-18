@@ -57,9 +57,9 @@
 	  var game = new Ski(gameSettings);
 	  window.ski = game;
 	  var view = new SkiView(game, ctx);
-	  // var load = new Loading(ctx);
-	  // load.animate(view.start.bind(view));
-	  view.start();
+	  var load = new Loading(ctx);
+	  load.animate(view.start.bind(view));
+	  // view.start();
 	});
 
 
@@ -744,6 +744,7 @@
 	}
 	
 	SkiView.prototype.start = function () {
+	  $('.header').css('display', 'block');
 	  $('.newgame').off('click');
 	  $('.welcome').css('display','block');
 	  this.bindKeyHandlers();
