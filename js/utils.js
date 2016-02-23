@@ -25,10 +25,12 @@ Utils.overlap = function (r1, r2) {
            r2.bottom < r1.top);
 }
 
-Utils.vector = function (pos1, pos2) {
-  var vec_x = pos2[0] - pos1[0];
+Utils.vector = function (pos1, pos2) {  // Calculates a direction vector between 2 positions, and
+  var vec_x = pos2[0] - pos1[0];        // normalizes it to always have a max x or y magnitude of 1.
   var vec_y = pos2[1] - pos1[1];
-  var normal = Math.abs(vec_x) > Math.abs(vec_y) ? Math.abs(vec_x) : Math.abs(vec_y);
+  var dx = Math.abs(vec_x);
+  var dy = Math.abs(vec_y);
+  var normal = dx > dy ? dx : dy;
   return [vec_x/normal, vec_y/normal];
 }
 
