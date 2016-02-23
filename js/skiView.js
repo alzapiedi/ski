@@ -8,7 +8,7 @@ var SkiView = function (game, ctx) {
 }
 
 SkiView.prototype.start = function () {
-  $('.header').css('display', 'block');
+  // $('.header').css('display', 'block');
   $('.newgame').off('click');
   $('.welcome').css('display','block');
   this.bindKeyHandlers();

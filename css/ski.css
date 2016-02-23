@@ -18,6 +18,7 @@ h2 {
 .content {
   width: 1050px;
   display: block;
+  margin: 0 auto;
 }
 .options {
   float: left;
@@ -60,11 +61,12 @@ li:hover {
 }
 
 .welcome {
-  position: absolute;
+  position: relative;
   top: 160px;
   left: 200px;
   display: none;
   font-family: Helvetica;
+  width: 500px;
 }
 
 .header {
