@@ -11,4 +11,4 @@ When physics is enabled, the velocities adjust toward a target velocity to simul
 Each object has a custom rectangular hit box defined to maximize the accuracy of collision detection.  There is a provision to ensure the same object is not continuously collided with.
 
 ## Vectors
-The snow monster's velocity is calculated by first determining the direction of the vector between the monster and the skier. Then, the magnitude of the vector is scaled according to the position of the monster relative to the skier.
+The snow monster's velocity is calculated by first determining the direction of the vector between the monster and the skier. Then, the magnitude of the vector is scaled according to the position of the monster relative to the skier and the direction of the skier.
