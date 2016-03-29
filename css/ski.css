@@ -72,12 +72,8 @@ li:hover {
   width: 500px;
 }
 
-.header {
-  display: none;
-  background: #ccc;
-}
 
-.header-links {
+.links {
   display: block;
   width: 500px;
   margin: auto;
@@ -91,22 +87,15 @@ li:hover {
 
 .link {
   float: left;
-  width: 160px;
   text-align: center;
   font-family: Helvetica;
-  padding: 0;
+  padding: 0 10px;
+  border: 0;
 }
 
-.left {
-  text-align: left;
-}
-
-.right {
-  text-align: right;
-}
 
 .port-link {
-  padding: 24px 0;
+  padding: 16px 0;
   display: block;
   text-decoration: none;
   cursor: pointer;
